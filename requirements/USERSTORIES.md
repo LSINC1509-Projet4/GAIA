@@ -1,4 +1,17 @@
 UserStory 1:
 En tant qu'utilisateur , je souhaite publier des photos de mes observations afin de partager mes découvertes avec la communauté et de contribuer à la base de données scientifique. 
 
- 
+UserStory 2: 
+En tant qu'administrateur , je souhaite pouvoir supprimer des profils afin de maintenir une atmosphère saine au sein de la communauté 
+    Critères d'acceptation:
+        -Vérifié qu'après la supression du profil le profil est bien effacé de la base donné
+        -Vérifié que le profil n'est plus visible pour tous utilisateurs 
+
+
+UserStory 3: 
+En tant que Biologiste , je souhaite pouvoir rectifier les posts des utilisateurs lambda afin d'avoir un feed et une base de données scientifiquement correct 
+    Critères d'acceptation: 
+    - Vérifié les changements dans la base de données 
+    - Vérifié que les changements sont bien visibles par tous les utilisateurs 
+    - Vérifié que seul les biologistes peuvent changer un post d’un autre utilisateur non biologiste
+
