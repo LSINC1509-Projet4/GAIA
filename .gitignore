@@ -82,6 +82,18 @@ target/
 profile_default/
 ipython_config.py
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environnement virtuel
+venv/
+.env/
+
+# Base de données SQLite
+*.db
+
 # Mac os 
 .DS_Store
 
