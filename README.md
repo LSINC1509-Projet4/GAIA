@@ -4,12 +4,21 @@
 
 ```text
 GAIA/
-├── app/                  
-│   ├── __init__.py       
-│   ├── models.py         
-│   ├── routes/           
-│   ├── static/          
-│   └── templates/        
-├── docs/                 
-├── run.py                
-└── requirements.txt     
+├── app/
+│   ├── __init__.py        
+│   ├── db.py              
+│   ├── models.py          
+│   ├── routes/
+│   │   └── main.py        
+│   ├── static/           
+│   └── templates/         
+├── docs/
+│   ├── PERSONAS/          
+│   ├── USERSTORIES.md     
+│   ├── UML.png            
+│   └── fiche_projet_GAIA.pdf
+├── tests/
+│   └── test_db.py         
+├── run.py                 
+├── requirements.txt       
+└── .env/                   
