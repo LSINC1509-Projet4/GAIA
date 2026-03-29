@@ -1,0 +1,93 @@
+/* --- 1. BASE & CENTRAGE --- */
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px; /* Espace de sécurité sur mobile */
+    /* Dégradé vert pastel */
+    background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-sizing: border-box;
+}
+
+/* --- 2. LE CADRE BLANC (CONTAINER) --- */
+.container {
+    background-color: rgba(255, 255, 255, 0.9); /* Blanc légèrement transparent */
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    width: 100%;
+    max-width: 400px; /* Largeur max sur ordi */
+    box-sizing: border-box;
+}
+
+/* --- 3. ÉLÉMENTS DU FORMULAIRE --- */
+img {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+h1 {
+    margin-bottom: 30px;
+    font-weight: 600;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: 16px; /* Évite le zoom auto forcé sur iPhone */
+    box-sizing: border-box;
+    outline: none;
+}
+
+/* --- 4. LES BOUTONS (RESPONSIVE) --- */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-direction: row; /* Côte à côte par défaut */
+}
+
+button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eee;
+    color: #444;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background-color: #ddd;
+}
+
+/* --- 5. MOBILE (Écrans de moins de 480px) --- */
+@media (max-width: 480px) {
+    .container {
+        padding: 25px 15px; /*  Réduit les marges internes */
+    }
+
+    .button-group {
+        flex-direction: column; /* Sur téléphone permet d'empiler */
+    }
+    
+    button {
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+}

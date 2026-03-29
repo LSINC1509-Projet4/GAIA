@@ -1,3 +1,4 @@
+from flask_login import UserMixin
 
 SCHEMA = """
 -- Désactiver les contraintes pour la création (optionnel)
@@ -13,6 +14,14 @@ CREATE TABLE IF NOT EXISTS users (
     role TEXT DEFAULT 'user'
 );
 """
+
+class User(UserMixin):
+    def __init__(self, id, username, email, role):
+        self.id = id
+        self.username = username
+        self.email = email
+        self.role = role
+
 def init_db(db):
     """Exécute le schéma SQL pour créer les tables."""
     cursor = db.cursor()
