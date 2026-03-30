@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     Age INT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role TEXT DEFAULT 'user'
+    role TEXT DEFAULT 'utilisateur'
 );
 """
 
