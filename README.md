@@ -11,9 +11,18 @@ GAIA/
 │   ├── db.py              
 │   ├── models.py          
 │   ├── routes/
-│   │   └── main.py        
-│   ├── static/           
-│   └── templates/         
+│   │   ├── main.py     
+│   │   └── auth.py
+│   ├── static/   
+│   │   ├── css
+│   │   │   ├── index.css
+│   │   │   └── login.css
+│   │   └──Logo.png
+│   └── templates/ 
+│       ├── index.html
+│       ├── login.html
+│       └── register.html
+│        
 ├── docs/
 │   ├── PERSONAS/          
 │   ├── USERSTORIES.md     
@@ -23,4 +32,22 @@ GAIA/
 │   └── test_db.py         
 ├── run.py                 
 ├── requirements.txt       
-└── .env/                   
+└── .env/ 
+```
+# Lancer le projet 
+
+```text
+git clone  https://github.com/LSINC1509-Projet4/GAIA.git
+cd GAIA
+source .env/bin/activate
+python install -r requirements.txt
+```
+Si pas de base de donnée active 
+```text 
+python -m test.test_db
+```
+lancer le site 
+```text 
+python run.py
+```
+
