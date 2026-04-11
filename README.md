@@ -1,4 +1,6 @@
 # GAIA 
+<img width="526" height="504" alt="Screenshot Mar 28 2026" src="https://github.com/user-attachments/assets/62e58e44-c7d2-46c2-8437-70639fd0bfb5" />
+
 
 # Structure du Projet
 
@@ -15,11 +17,12 @@ GAIA/
 │   │   ├── css
 │   │   │   ├── index.css
 │   │   │   └── login.css
-│   │   ├──Logo.png
+│   │   └──Logo.png
 │   └── templates/ 
 │       ├── index.html
 │       ├── login.html
 │       └── register.html
+│        
 ├── docs/
 │   ├── PERSONAS/          
 │   ├── USERSTORIES.md     
@@ -47,3 +50,4 @@ lancer le site
 ```text 
 python run.py
 ```
+
