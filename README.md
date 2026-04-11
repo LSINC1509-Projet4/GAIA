@@ -40,7 +40,7 @@ GAIA/
 git clone  https://github.com/LSINC1509-Projet4/GAIA.git
 cd GAIA
 source .env/bin/activate
-python install -r requirements.txt
+pip install -r requirements.txt
 ```
 Si pas de base de donnée active 
 ```text 
@@ -50,4 +50,3 @@ lancer le site
 ```text 
 python run.py
 ```
-
