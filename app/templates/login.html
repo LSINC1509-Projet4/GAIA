@@ -1,37 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Connexion - GAIA</title>
-    <link rel="stylesheet" href="static/css/login.css">
-    <link rel="icon" type="image/x-icon" href="static/Logo.png">
-</head>
-<body>
-    <div class="container"> <img src="static/Logo.png" alt="Logo GAIA">
-        <h1>Connexion</h1>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Connexion - GAIA</title>
+        <link rel="stylesheet" href="static/css/login.css" />
+        <link rel="icon" type="image/x-icon" href="static/Logo.png" />
+    </head>
+    <body>
+        <div class="container">
+            <img src="static/Logo.png" alt="Logo GAIA" />
+            <h1>Connexion</h1>
 
-        <!-- Message d'erreur si utilisateur. pas trouvé ou mot de passe pas bon -->
+            <!-- Message d'erreur si utilisateur. pas trouvé ou mot de passe pas bon -->
 
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            {% for message in messages %}
-              <div style="color: #9b2c2c; background-color: #feb2b2; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; border: 1px solid #f5c2c7;">
+            {% with messages = get_flashed_messages() %} {% if messages %} {%
+            for message in messages %}
+            <div
+                style="
+                    color: #9b2c2c;
+                    background-color: #feb2b2;
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                    border: 1px solid #f5c2c7;
+                "
+            >
                 {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-        
-        <form method="post">
-            <input type="text" name="username" placeholder="Nom d'utilisateur" required>
-            <input type="password" name="password" placeholder="Mot de passe" required>
-            
-            <div class="button-group"> <button type="submit">Se connecter</button>
-                <a href="register.html">
-                <button type="button">Créer un compte</button>
-                </a>
             </div>
-        </form>
-    </div>
-</body>
+            {% endfor %} {% endif %} {% endwith %}
+
+            <form method="post">
+                <input
+                    type="text"
+                    name="Username"
+                    placeholder="Nom d'utilisateur"
+                    required
+                />
+                <input
+                    type="password"
+                    name="Password"
+                    placeholder="Mot de passe"
+                    required
+                />
+
+                <div class="button-group">
+                    <button type="submit">Se connecter</button>
+                    <a href="register.html">
+                        <button type="button">Créer un compte</button>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </body>
 </html>

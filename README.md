@@ -44,7 +44,7 @@ pip install -r requirements.txt
 ```
 Si pas de base de donnée active 
 ```text 
-python -m test.test_db
+python -m tests.test_db
 ```
 lancer le site 
 ```text 

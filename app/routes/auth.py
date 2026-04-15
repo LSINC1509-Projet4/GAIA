@@ -1,33 +1,41 @@
-#Code d'authification à la base données (de connexion au site ) pour un utilisateurs 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required
+# Code d'authification à la base données (de connexion au site ) pour un utilisateurs
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import login_required, login_user, logout_user
+
 from app.db import get_db
 from app.models import User
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint("auth", __name__)
 
-@auth_bp.route('/login', methods=['GET', 'POST'])
+
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
+    if request.method == "POST":
+        Username = request.form.get("Username")
+        Password = request.form.get("Password")
+
         db = get_db()
         user_row = db.execute(
-            "SELECT * FROM users WHERE username = ?", (username,)
+            "SELECT * FROM Users WHERE Username = ?", (Username,)
         ).fetchone()
 
-        if user_row and user_row['password'] == password:
-            user = User(user_row['id'], user_row['username'], user_row['email'], user_row['role'])
+        if user_row and user_row["Password"] == Password:
+            user = User(
+                user_row["Id"],
+                user_row["Username"],
+                user_row["Email"],
+                user_row["Role"],
+            )
             login_user(user)
-            return redirect(url_for('main.index'))
-        
-        flash('Nom d\'utilisateur ou mot de passe incorrect.')
-    
-    return render_template('login.html')
+            return redirect(url_for("main.index"))
 
-@auth_bp.route('/logout')
+        flash("Nom d'utilisateur ou mot de passe incorrect.")
+
+    return render_template("login.html")
+
+
+@auth_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('auth.login'))
+    return redirect(url_for("auth.login"))

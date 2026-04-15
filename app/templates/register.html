@@ -1,36 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Création de compte - GAIA</title>
-    <link rel="icon" type="image/x-icon" href="static/Logo.png">
-    <link rel="stylesheet" href="static/css/login.css">
-</head>
-<body>
-    <div class="container">
-        <img src="static/Logo.png" alt="Logo GAIA">
-        <h1>Créer un compte</h1>
-        <form method="post">
-            <input type="text" name="username" placeholder="Nom d'utilisateur" required>
-            <input type="number" name="age" placeholder="Âge" min="1" max="120" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Mot de passe" required>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Création de compte - GAIA</title>
+        <link rel="icon" type="image/x-icon" href="static/Logo.png" />
+        <link rel="stylesheet" href="static/css/login.css" />
+    </head>
+    <body>
+        <div class="container">
+            <img src="static/Logo.png" alt="Logo GAIA" />
+            <h1>Créer un compte</h1>
+            <form method="post">
+                <input
+                    type="text"
+                    name="Username"
+                    placeholder="Nom d'utilisateur"
+                    required
+                />
+                <input
+                    type="number"
+                    name="Age"
+                    placeholder="Âge"
+                    min="1"
+                    max="120"
+                    required
+                />
+                <input type="Email" name="Email" placeholder="Email" required />
+                <input
+                    type="Password"
+                    name="Password"
+                    placeholder="Mot de passe"
+                    required
+                />
 
-            <select name="role" required>
-                <option value="" disabled selected>Choisir un rôle</option>
-                <option value="utilisateur">Utilisateur</option>
-                <option value="admin">Administrateur</option>
-                <option value="biologiste">Biologiste</option>
-            </select>
+                <select name="Role" required>
+                    <option value="" disabled selected>Choisir un rôle</option>
+                    <option value="Utilisateur">Utilisateur</option>
+                    <option value="Admin">Administrateur</option>
+                    <option value="Biologiste">Biologiste</option>
+                </select>
 
-            <div class="button-group">
-                <button type="submit" class="btn-primary">S'inscrire</button>
-                <a href="/">
-                <button type="button">Déja un compte ?</button>
-                </a>
-            </div>
-        </form>
-    </div>
-</body>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">
+                        S'inscrire
+                    </button>
+                    <a href="/">
+                        <button type="button">Déja un compte ?</button>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </body>
 </html>

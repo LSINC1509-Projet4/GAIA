@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS Users (
 
 class User(UserMixin):
     def __init__(self, Id, Username, Email, Role):
-        self.Id = Id
+        self.id = Id
         self.Username = Username
         self.Email = Email
         self.Role = Role
