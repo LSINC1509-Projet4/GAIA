@@ -13,6 +13,20 @@ CREATE TABLE IF NOT EXISTS Users (
     Password TEXT NOT NULL,
     Role TEXT DEFAULT 'utilisateur'
 );
+
+-- Table des Posts
+CREATE TABLE IF NOT EXISTS Posts (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Titre text NOT NULL ,
+    Description TEXT,
+    Commentaire TEXT ,
+    Date DATE NOT NULL,
+    Localisation TEXT NOT NULL,
+    Latitude REAL NOT NULL,
+    Longitude REAL NOT NULL,
+    Badges INTEGER ,
+    Photos BLOB NOT NULL
+);
 """
 
 
@@ -22,6 +36,29 @@ class User(UserMixin):
         self.Username = Username
         self.Email = Email
         self.Role = Role
+
+
+class Post:
+    def __init__(
+        self,
+        Id,
+        Commentaires,
+        Date,
+        Localisation,
+        Latitude,
+        Longitude,
+        Badges,
+        Username,
+        Photo,
+    ):
+        self.id = Id
+        self.Date = Date
+        self.Localisation = Localisation
+        self.Latitude = Latitude
+        self.Longitude = Longitude
+        self.Badges = Badges
+        self.Username = Username
+        self.Photo = Photo
 
 
 def init_db(db):
