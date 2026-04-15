@@ -8,13 +8,18 @@ body {
     padding: 20px; /* Espace de sécurité sur mobile */
     /* Dégradé vert pastel */
     background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     box-sizing: border-box;
 }
 
 /* --- 2. LE CADRE BLANC (CONTAINER) --- */
 .container {
-    background-color: rgba(255, 255, 255, 0.9); /* Blanc légèrement transparent */
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.9
+    ); /* Blanc légèrement transparent */
     padding: 40px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -73,6 +78,45 @@ button:hover {
     background-color: #ddd;
 }
 
+/* Styling for the Location under the user info */
+.location-tag {
+    margin-top: 5px;
+    color: #2f855a; /* Green to match GAIA theme */
+    font-weight: 500;
+}
+
+/* Main image styling */
+.post-image-main {
+    width: 100%;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+/* Reddit-style gray background for comments */
+.comment-section {
+    background-color: #f7fafc;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 3px solid #cbd5e0;
+}
+
+.comment-label {
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #a0aec0;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.comment-text {
+    font-size: 0.9rem;
+    color: #4a5568;
+    margin: 0;
+    font-style: italic;
+}
+
 /* --- 5. MOBILE (Écrans de moins de 480px) --- */
 @media (max-width: 480px) {
     .container {
@@ -82,7 +126,7 @@ button:hover {
     .button-group {
         flex-direction: column; /* Sur téléphone permet d'empiler */
     }
-    
+
     button {
         width: 100%;
     }

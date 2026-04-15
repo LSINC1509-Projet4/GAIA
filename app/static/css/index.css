@@ -1,108 +1,148 @@
- /* --- 1. BASE & CENTRAGE --- */
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            box-sizing: border-box;
-        }
+/* --- 1. BASE & BACKGROUND --- */
+body {
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-        /* --- 2. LE CADRE BLANC (CONTAINER) --- */
-        .container {
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            width: 100%;
-            max-width: 450px; /* Slightly wider for dashboard content */
-            box-sizing: border-box;
-        }
+/* --- 2. NAVIGATION --- */
+.navbar {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px 25px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    box-sizing: border-box;
+}
 
-        /* --- 3. ÉLÉMENTS --- */
-        img {
-            max-width: 120px;
-            height: auto;
-            margin-bottom: 20px;
-        }
+.user-info-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-        h1 {
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #333;
-        }
+.nav-logo {
+    height: 35px;
+    width: auto;
+}
 
-        p {
-            color: #555;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
+.user-greeting {
+    font-weight: 600;
+    color: #2d3748;
+}
 
-        .user-info {
-            background: #f0fff4;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #c6f6d5;
-            margin-bottom: 25px;
-        }
+/* --- 3. FEED & REDDIT-STYLE CARDS --- */
+.feed-container {
+    width: 100%;
+    max-width: 600px;
+}
 
-        .role-badge {
-            display: inline-block;
-            background-color: #2f855a;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
+.post-card {
+    background-color: rgba(255, 255, 255, 0.98);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+    border-left: 6px solid #48bb78;
+    transition: transform 0.2s ease;
+}
 
-        /* --- 4. LES BOUTONS --- */
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-direction: row;
-        }
+.post-card:hover {
+    transform: translateY(-2px);
+}
 
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-block;
-        }
+.post-title {
+    font-size: 1.4rem;
+    margin: 10px 0;
+    color: #1a202c;
+    font-weight: 700;
+}
 
-        .btn-logout {
-            background-color: #feb2b2;
-            color: #9b2c2c;
-        }
+.post-meta {
+    font-size: 0.85rem;
+    color: #718096;
+}
 
-        .btn-logout:hover {
-            background-color: #fc8181;
-        }
+.location-tag {
+    margin-top: 4px;
+    color: #2f855a;
+    font-weight: 600;
+}
 
-        .btn-refresh {
-            background-color: #eee;
-            color: #444;
-        }
+.post-content {
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
 
-        .btn-refresh:hover {
-            background-color: #ddd;
-        }
+.post-image-main {
+    width: 100%;
+    border-radius: 8px;
+    margin: 10px 0;
+    display: block;
+}
 
-        /* --- 5. MOBILE --- */
-        @media (max-width: 480px) {
-            .container { padding: 25px 15px; }
-            .button-group { flex-direction: column; }
-            .btn { width: 100%; }
-            h1 { font-size: 1.5rem; }
-        }
+/* --- 4. COMMENTS SECTION --- */
+.comment-section {
+    background-color: #f7fafc;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 3px solid #cbd5e0;
+}
+
+.comment-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #a0aec0;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comment-text {
+    font-size: 0.92rem;
+    color: #2d3748;
+    margin: 0;
+}
+
+/* --- 5. BUTTONS & FLASH --- */
+.btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.btn-logout {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+}
+
+.btn-post {
+    background-color: #c6f6d5;
+    color: #22543d;
+    margin-right: 8px;
+}
+
+.flash-msg {
+    background-color: #fff;
+    border-left: 4px solid #f6e05e;
+    padding: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 8px;
+}

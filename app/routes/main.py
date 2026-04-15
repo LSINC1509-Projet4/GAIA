@@ -9,8 +9,9 @@ main_bp = Blueprint("main", __name__)
 @main_bp.route("/")
 @login_required
 def index():
-    print(f"DEBUG: User is authenticated: {current_user.is_authenticated}")
-    return render_template("index.html")
+    db = get_db()
+    posts = db.execute("SELECT * FROM Posts ORDER BY Date DESC").fetchall()
+    return render_template("index.html", posts=posts)
 
 
 @main_bp.route("/register.html", methods=["GET", "POST"])
