@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS Posts (
     Latitude REAL NOT NULL,
     Longitude REAL NOT NULL,
     Badges INTEGER ,
-    Username TEXT,
+    Username TEXT NOT NULL,
     Photo TEXT NOT NULL
 );
 """
