@@ -57,10 +57,6 @@ body {
     transition: transform 0.2s ease;
 }
 
-.post-card:hover {
-    transform: translateY(-2px);
-}
-
 .post-title {
     font-size: 1.4rem;
     margin: 10px 0;
@@ -91,6 +87,7 @@ body {
     margin: 10px 0;
     display: block;
 }
+
 
 /* --- 4. ACTION BUTTONS --- */
 .post-actions {
@@ -127,7 +124,19 @@ body {
     background-color: #f0fff4;
 }
 
+
+
+
+.post-map {
+    height: 200px;
+    width: 100%;
+    border-radius: 8px;
+    margin: 15px 0;
+    border: 1px solid #e2e8f0;
+    z-index: 1; /* Keeps map below the navbar if scrolling */
+}
 /* --- 5. COMMENTS --- */
+
 .comment-section {
     margin-top: 8px;
 }
@@ -202,8 +211,7 @@ body {
     color: #2f855a;
     background-color: #f0fff4;
 }
-
-/* --- 6. NAV BUTTONS & FLASH --- */
+/* --- 6. BUTTONS & FLASH --- */
 .btn {
     padding: 8px 18px;
     border-radius: 8px;

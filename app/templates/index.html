@@ -5,6 +5,16 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>GAIA - Feed</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/index.css') }}"
+        />
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     </head>
     <body>
         {% with messages = get_flashed_messages() %}
@@ -109,6 +119,38 @@
                 </div>
                 {% endfor %}
             {% else %}
+                {% if post.Photo %}
+                <img
+                    src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                    alt="Post image"
+                    class="post-image-main"
+                />
+                {% endif %}
+
+                <div id="map-{{ post.id }}" class="post-map"></div>
+
+                {% if post.Commentaire %}
+                <div class="comment-section">
+                    <span class="comment-label">Comment</span>
+                    <p class="comment-text">{{ post.Commentaire }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <script>
+                (function() {
+                    var map = L.map('map-{{ post.id }}', {
+                        scrollWheelZoom: false
+                    }).setView([{{ post.Latitude }}, {{ post.Longitude }}], 13);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap'
+                    }).addTo(map);
+
+                    L.marker([{{ post.Latitude }}, {{ post.Longitude }}]).addTo(map);
+                })();
+            </script>
+            {% endfor %} {% else %}
             <div class="post-card" style="text-align: center">
                 <p>No posts yet. Be the first to share something!</p>
             </div>
