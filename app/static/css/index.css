@@ -1,4 +1,4 @@
-/* --- 1. BASE & BACKGROUND --- */
+/* --- 1. BASE --- */
 body {
     margin: 0;
     padding: 20px;
@@ -10,7 +10,7 @@ body {
     align-items: center;
 }
 
-/* --- 2. NAVIGATION --- */
+/* --- 2. NAVBAR --- */
 .navbar {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 10px 25px;
@@ -41,7 +41,7 @@ body {
     color: #2d3748;
 }
 
-/* --- 3. FEED & REDDIT-STYLE CARDS --- */
+/* --- 3. FEED --- */
 .feed-container {
     width: 100%;
     max-width: 600px;
@@ -88,7 +88,45 @@ body {
     display: block;
 }
 
-/* --- 4. MAP STYLING --- */
+
+/* --- 4. ACTION BUTTONS --- */
+.post-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    margin: 12px 0;
+}
+
+.action-btn {
+    padding: 6px 16px;
+    border: 1.5px solid #cbd5e0;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #718096;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    border-color: #2f855a;
+    color: #2f855a;
+    background-color: #f0fff4;
+}
+
+.action-btn.liked {
+    border-color: #2f855a;
+    color: #2f855a;
+    background-color: #f0fff4;
+}
+
+
+
+
 .post-map {
     height: 200px;
     width: 100%;
@@ -97,31 +135,82 @@ body {
     border: 1px solid #e2e8f0;
     z-index: 1; /* Keeps map below the navbar if scrolling */
 }
+/* --- 5. COMMENTS --- */
 
-/* --- 5. COMMENTS SECTION --- */
 .comment-section {
-    background-color: #f7fafc;
-    padding: 12px 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-    border-left: 3px solid #cbd5e0;
+    margin-top: 8px;
 }
 
-.comment-label {
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #a0aec0;
-    display: block;
+.comment-box {
+    margin-bottom: 10px;
+}
+
+.comment-box.hidden {
+    display: none;
+}
+
+.comment-box textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    min-height: 70px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.comment-box textarea:focus {
+    border-color: #68d391;
+}
+
+.comment {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background-color: #f7fafc;
+    border-left: 3px solid #cbd5e0;
+    border-radius: 6px;
+}
+
+.comment.reply {
+    margin-left: 20px;
+    border-left-color: #48bb78;
+    background-color: #f0fff4;
+}
+
+.comment-meta {
+    font-size: 0.8rem;
+    color: #718096;
     margin-bottom: 4px;
 }
 
 .comment-text {
-    font-size: 0.92rem;
     color: #2d3748;
-    margin: 0;
+    font-size: 0.92rem;
+    margin: 0 0 6px 0;
 }
 
+.reply-toggle-btn {
+    padding: 3px 10px;
+    border: 1.5px solid #cbd5e0;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #718096;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.reply-toggle-btn:hover {
+    border-color: #2f855a;
+    color: #2f855a;
+    background-color: #f0fff4;
+}
 /* --- 6. BUTTONS & FLASH --- */
 .btn {
     padding: 8px 18px;
@@ -151,4 +240,5 @@ body {
     width: 100%;
     max-width: 600px;
     border-radius: 8px;
+    box-sizing: border-box;
 }
