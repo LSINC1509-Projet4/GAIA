@@ -26,9 +26,9 @@ def seed_file_post():
         # 3. Simulate "saving" a file by copying it
         try:
             shutil.copy(source_image, target_path)
-            print(f"✅ Image copied to: {target_path}")
+            print(f"Image copied to: {target_path}")
         except FileNotFoundError:
-            print("❌ Error: source image 'app/static/Logo.png' not found.")
+            print("Error: source image 'app/static/Logo.png' not found.")
             return
 
         # 4. Insert into DB (Saving the STRING path, not the BLOB)
@@ -50,9 +50,9 @@ def seed_file_post():
                 ),
             )
             db.commit()
-            print("✅ Database updated with photo reference!")
+            print("Database updated with photo reference!")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
 
 
 if __name__ == "__main__":
