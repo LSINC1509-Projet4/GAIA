@@ -57,10 +57,6 @@ body {
     transition: transform 0.2s ease;
 }
 
-.post-card:hover {
-    transform: translateY(-2px);
-}
-
 .post-title {
     font-size: 1.4rem;
     margin: 10px 0;
@@ -92,7 +88,17 @@ body {
     display: block;
 }
 
-/* --- 4. COMMENTS SECTION --- */
+/* --- 4. MAP STYLING --- */
+.post-map {
+    height: 200px;
+    width: 100%;
+    border-radius: 8px;
+    margin: 15px 0;
+    border: 1px solid #e2e8f0;
+    z-index: 1; /* Keeps map below the navbar if scrolling */
+}
+
+/* --- 5. COMMENTS SECTION --- */
 .comment-section {
     background-color: #f7fafc;
     padding: 12px 15px;
@@ -116,7 +122,7 @@ body {
     margin: 0;
 }
 
-/* --- 5. BUTTONS & FLASH --- */
+/* --- 6. BUTTONS & FLASH --- */
 .btn {
     padding: 8px 18px;
     border-radius: 8px;
