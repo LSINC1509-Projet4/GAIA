@@ -1,35 +1,73 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>GAIA Dashboard</title>
-        <link rel="icon" type="image/x-icon" href="static/Logo.png" />
-        <link rel="stylesheet" href="static/css/index.css" />
+        <title>GAIA - Feed</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/index.css') }}"
+        />
     </head>
     <body>
-        <div class="container">
-            <img
-                src="static/Logo.png"
-                alt="GAIA Logo"
-                onerror="this.style.display = 'none'"
-            />
+        {% with messages = get_flashed_messages() %} {% if messages %} {% for
+        message in messages %}
+        <div class="flash-msg">{{ message }}</div>
+        {% endfor %} {% endif %} {% endwith %}
 
-            <h1>Dashboard</h1>
-
-            <div class="user-info">
-                <p>
-                    Welcome back, <strong>{{ current_user.Username }}</strong>!
-                </p>
-                <span class="role-badge">{{ current_user.Role }}</span>
+        <div class="navbar">
+            <div class="user-info-block">
+                <img
+                    src="{{ url_for('static', filename='Logo.png') }}"
+                    alt="GAIA Logo"
+                    class="nav-logo"
+                />
+                <span class="user-greeting"
+                    >Welcome, {{ current_user.Username }}</span
+                >
             </div>
 
-            <p>You have successfully authenticated to the GAIA system.</p>
-
-            <div class="button-group">
-            <a href="{{ url_for('main.publish') }}" class="btn btn-refresh">Publier</a>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
+            <div class="nav-links">
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post"
+                    >Publier</a
+                >
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout"
+                    >Sign Out</a
+                >
             </div>
+        </div>
+
+        <div class="feed-container">
+            {% if posts %} {% for post in posts %}
+            <div class="post-card">
+                <div class="post-meta">
+                    Posted by <strong>{{ post.Username }}</strong> • {{
+                    post.Date }} {% if post.Localisation %}
+                    <div class="location-tag">📍 {{ post.Localisation }}</div>
+                    {% endif %}
+                </div>
+
+                <h2 class="post-title">{{ post.Titre }}</h2>
+                <p class="post-content">{{ post.Description }}</p>
+
+                {% if post.Photo %}
+                <img
+                    src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                    alt="Post image"
+                    class="post-image-main"
+                />
+                {% endif %} {% if post.Commentaire %}
+                <div class="comment-section">
+                    <span class="comment-label">Comment</span>
+                    <p class="comment-text">{{ post.Commentaire }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %} {% else %}
+            <div class="post-card" style="text-align: center">
+                <p>No posts yet. Be the first to share something!</p>
+            </div>
+            {% endif %}
         </div>
     </body>
 </html>

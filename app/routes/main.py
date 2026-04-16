@@ -1,7 +1,19 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+import os
+from datetime import datetime
+
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
+
 from app.db import get_db
-from datetime import date
 
 main_bp = Blueprint("main", __name__)
 
@@ -9,8 +21,11 @@ main_bp = Blueprint("main", __name__)
 @main_bp.route("/")
 @login_required
 def index():
-    print(f"DEBUG: User is authenticated: {current_user.is_authenticated}")
-    return render_template("index.html")
+    db = get_db()
+    posts = db.execute(
+        "SELECT Id, Titre, Description, Commentaire, strftime('%Y-%m-%d', Date) as Date, Localisation, Latitude, Longitude, Badges, Username, Photo FROM Posts ORDER BY Date DESC"
+    ).fetchall()
+    return render_template("index.html", posts=posts)
 
 
 @main_bp.route("/register.html", methods=["GET", "POST"])
@@ -40,26 +55,42 @@ def register():
 
     return render_template("register.html")
 
+
 @main_bp.route("/publish", methods=["GET", "POST"])
-@login_required #Seulement les users ayant un compte et connecté peuvent poster!
+@login_required  # Seulement les users ayant un compte et connecté peuvent poster!
 def publish():
     if request.method == "POST":
         titre = request.form.get("Titre")
         description = request.form.get("Description")
+        date_post = datetime.now().strftime("%Y-%m-%d")
         localisation = request.form.get("Localisation")
         latitude = request.form.get("Latitude")
         longitude = request.form.get("Longitude")
-        photo = request.files.get("Photo")
-        photo_data = photo.read() if photo else None
+        file = request.files.get("Photo")
+        filename = None
+        if file and isinstance(file.filename, str) and file.filename != "":
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join(current_app.root_path, "static/uploads")
+            if not os.path.exists(upload_path):
+                os.makedirs(upload_path)
+            file.save(os.path.join(upload_path, filename))
 
         db = get_db()
         db.execute(
-            """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Photos)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (titre, description, None, date.today(), localisation, latitude, longitude, photo_data)
+            "INSERT INTO Posts (titre, description,date ,  localisation, latitude, longitude, Photo, Username) VALUES (?, ?, ?, ?, ?, ?,?,?)",
+            (
+                titre,
+                description,
+                date_post,
+                localisation,
+                latitude,
+                longitude,
+                filename,
+                current_user.Username,
+            ),
         )
         db.commit()
         flash("Post publié.")
         return redirect(url_for("main.index"))
-    
+
     return render_template("publish.html")
