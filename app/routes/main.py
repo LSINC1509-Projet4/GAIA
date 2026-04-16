@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-
 from app.db import get_db
+from datetime import date
 
 main_bp = Blueprint("main", __name__)
 
@@ -39,3 +39,27 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
+
+@main_bp.route("/publish", methods=["GET", "POST"])
+@login_required #Seulement les users ayant un compte et connecté peuvent poster!
+def publish():
+    if request.method == "POST":
+        titre = request.form.get("Titre")
+        description = request.form.get("Description")
+        localisation = request.form.get("Localisation")
+        latitude = request.form.get("Latitude")
+        longitude = request.form.get("Longitude")
+        photo = request.files.get("Photo")
+        photo_data = photo.read() if photo else None
+
+        db = get_db()
+        db.execute(
+            """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Photos)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (titre, description, None, date.today(), localisation, latitude, longitude, photo_data)
+        )
+        db.commit()
+        flash("Post publié.")
+        return redirect(url_for("main.index"))
+    
+    return render_template("publish.html")

@@ -27,9 +27,8 @@
             <p>You have successfully authenticated to the GAIA system.</p>
 
             <div class="button-group">
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout"
-                    >Sign Out</a
-                >
+            <a href="{{ url_for('main.publish') }}" class="btn btn-refresh">Publier</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
             </div>
         </div>
     </body>
