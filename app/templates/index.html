@@ -1,73 +1,146 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>GAIA - Feed</title>
-        <link
-            rel="stylesheet"
-            href="{{ url_for('static', filename='css/index.css') }}"
-        />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
     </head>
     <body>
-        {% with messages = get_flashed_messages() %} {% if messages %} {% for
-        message in messages %}
-        <div class="flash-msg">{{ message }}</div>
-        {% endfor %} {% endif %} {% endwith %}
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-msg">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <div class="navbar">
             <div class="user-info-block">
-                <img
-                    src="{{ url_for('static', filename='Logo.png') }}"
-                    alt="GAIA Logo"
-                    class="nav-logo"
-                />
-                <span class="user-greeting"
-                    >Welcome, {{ current_user.Username }}</span
-                >
+                <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
+                <span class="user-greeting">Welcome, {{ current_user.Username }}</span>
             </div>
-
             <div class="nav-links">
-                <a href="{{ url_for('main.publish') }}" class="btn btn-post"
-                    >Publier</a
-                >
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout"
-                    >Sign Out</a
-                >
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post">Publier</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
             </div>
         </div>
 
         <div class="feed-container">
-            {% if posts %} {% for post in posts %}
-            <div class="post-card">
-                <div class="post-meta">
-                    Posted by <strong>{{ post.Username }}</strong> • {{
-                    post.Date }} {% if post.Localisation %}
-                    <div class="location-tag">📍 {{ post.Localisation }}</div>
+            {% if posts %}
+                {% for post in posts %}
+                <div class="post-card">
+
+                    <div class="post-meta">
+                        Posted by <strong>{{ post.Username }}</strong> • {{ post.Date }}
+                        {% if post.Localisation %}
+                        <div class="location-tag">📍 {{ post.Localisation }}</div>
+                        {% endif %}
+                    </div>
+
+                    <h2 class="post-title">{{ post.Titre }}</h2>
+                    <p class="post-content">{{ post.Description }}</p>
+
+                    {% if post.Photo %}
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                        alt="Post image"
+                        class="post-image-main"
+                    />
                     {% endif %}
-                </div>
 
-                <h2 class="post-title">{{ post.Titre }}</h2>
-                <p class="post-content">{{ post.Description }}</p>
+                    <div class="post-actions">
+                        <button class="action-btn like-btn" onclick="toggleLike(this)">
+                            Like <span class="like-count">0</span>
+                        </button>
+                        <button class="action-btn comment-btn" onclick="toggleCommentBox('comment-box-{{ post.Id }}')">
+                            Comment
+                        </button>
+                        <button class="action-btn share-btn">
+                            Share
+                        </button>
+                    </div>
 
-                {% if post.Photo %}
-                <img
-                    src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
-                    alt="Post image"
-                    class="post-image-main"
-                />
-                {% endif %} {% if post.Commentaire %}
-                <div class="comment-section">
-                    <span class="comment-label">Comment</span>
-                    <p class="comment-text">{{ post.Commentaire }}</p>
+                    <div class="comment-section">
+
+                        <div id="comment-box-{{ post.Id }}" class="comment-box hidden">
+                            <form method="post" action="{{ url_for('main.add_comment', post_id=post.Id) }}">
+                                <input type="hidden" name="Parent_Id" value="" />
+                                <textarea
+                                    name="Contenu"
+                                    placeholder="Ajouter un commentaire... (Enter pour envoyer)"
+                                    required
+                                    onkeydown="submitOnEnter(event, this)"
+                                ></textarea>
+                            </form>
+                        </div>
+                        {% for comment in comments if comment['Post_Id'] == post.Id and comment['Parent_Id'] is none %}
+                        <div class="comment">
+                            <div class="comment-meta">
+                                <strong>{{ comment['Username'] }}</strong> • {{ comment['Date'] }}
+                            </div>
+                            <p class="comment-text">{{ comment['Contenu'] }}</p>
+
+                            <button class="reply-toggle-btn" onclick="toggleCommentBox('reply-box-{{ comment['Id'] }}')">
+                                Reply
+                            </button>
+                            <div id="reply-box-{{ comment['Id'] }}" class="comment-box hidden">
+                                <form method="post" action="{{ url_for('main.add_comment', post_id=post.Id) }}">
+                                    <input type="hidden" name="Parent_Id" value="{{ comment['Id'] }}" />
+                                    <textarea
+                                        name="Contenu"
+                                        placeholder="Répondre... (Enter pour envoyer)"
+                                        required
+                                        onkeydown="submitOnEnter(event, this)"
+                                    ></textarea>
+                                </form>
+                            </div>
+                            {% for reply in comments if reply['Parent_Id'] == comment['Id'] %}
+                            <div class="comment reply">
+                                <div class="comment-meta">
+                                    <strong>{{ reply['Username'] }}</strong> • {{ reply['Date'] }}
+                                </div>
+                                <p class="comment-text">{{ reply['Contenu'] }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                {% endif %}
-            </div>
-            {% endfor %} {% else %}
+                {% endfor %}
+            {% else %}
             <div class="post-card" style="text-align: center">
                 <p>No posts yet. Be the first to share something!</p>
             </div>
             {% endif %}
         </div>
+
+        <script>
+            function toggleLike(btn) {
+                const countSpan = btn.querySelector('.like-count');
+                const liked = btn.classList.toggle('liked');
+                countSpan.textContent = liked
+                    ? parseInt(countSpan.textContent) + 1
+                    : parseInt(countSpan.textContent) - 1;
+            }
+
+            function toggleCommentBox(id) {
+                const box = document.getElementById(id);
+                if (box) {
+                    box.classList.toggle('hidden');
+                    if (!box.classList.contains('hidden')) {
+                        box.querySelector('textarea').focus();
+                    }
+                }
+            }
+
+            function submitOnEnter(event, textarea) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    textarea.closest('form').submit();
+                }
+            }
+        </script>
+
     </body>
 </html>
