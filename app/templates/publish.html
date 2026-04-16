@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Publier une observation - GAIA</title>
+        <link rel="icon" type="image/x-icon" href="static/Logo.png" />
+        <link rel="stylesheet" href="static/css/publish.css" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <img src="static/Logo.png" alt="GAIA Logo" onerror="this.style.display='none'" />
+                <h1>Nouvelle observation</h1>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="flash">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="post" enctype="multipart/form-data">
+                <label for="Titre">Titre *</label>
+                <input type="text" id="Titre" name="Titre" placeholder="Ex: Renard roux près de la forêt" required />
+
+                <label for="Description">Description</label>
+                <textarea id="Description" name="Description" placeholder="Décrivez votre observation..."></textarea>
+
+                <label for="Localisation">Localisation *</label>
+                <input type="text" id="Localisation" name="Localisation" placeholder="Ex: Forêt de Soignes, Bruxelles" required />
+
+                <div class="coords">
+                    <div>
+                        <label for="Latitude">Latitude *</label>
+                        <input type="number" id="Latitude" name="Latitude" step="any" placeholder="50.8503" required />
+                    </div>
+                    <div>
+                        <label for="Longitude">Longitude *</label>
+                        <input type="number" id="Longitude" name="Longitude" step="any" placeholder="4.3517" required />
+                    </div>
+                </div>
+
+                <label for="Photo">Photo *</label>
+                <input type="file" id="Photo" name="Photo" accept="image/*" required />
+
+                <div class="button-group">
+                    <a href="{{ url_for('main.index') }}" class="btn-back">Annuler</a>
+                    <button type="submit">Publier</button>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

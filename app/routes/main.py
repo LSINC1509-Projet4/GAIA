@@ -1,5 +1,17 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+import os
+from datetime import datetime
+
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
 
 from app.db import get_db
 
@@ -10,7 +22,9 @@ main_bp = Blueprint("main", __name__)
 @login_required
 def index():
     db = get_db()
-    posts = db.execute("SELECT * FROM Posts ORDER BY Date DESC").fetchall()
+    posts = db.execute(
+        "SELECT Id, Titre, Description, Commentaire, strftime('%Y-%m-%d', Date) as Date, Localisation, Latitude, Longitude, Badges, Username, Photo FROM Posts ORDER BY Date DESC"
+    ).fetchall()
     return render_template("index.html", posts=posts)
 
 
@@ -40,3 +54,43 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
+
+
+@main_bp.route("/publish", methods=["GET", "POST"])
+@login_required  # Seulement les users ayant un compte et connecté peuvent poster!
+def publish():
+    if request.method == "POST":
+        titre = request.form.get("Titre")
+        description = request.form.get("Description")
+        date_post = datetime.now().strftime("%Y-%m-%d")
+        localisation = request.form.get("Localisation")
+        latitude = request.form.get("Latitude")
+        longitude = request.form.get("Longitude")
+        file = request.files.get("Photo")
+        filename = None
+        if file and isinstance(file.filename, str) and file.filename != "":
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join(current_app.root_path, "static/uploads")
+            if not os.path.exists(upload_path):
+                os.makedirs(upload_path)
+            file.save(os.path.join(upload_path, filename))
+
+        db = get_db()
+        db.execute(
+            "INSERT INTO Posts (titre, description,date ,  localisation, latitude, longitude, Photo, Username) VALUES (?, ?, ?, ?, ?, ?,?,?)",
+            (
+                titre,
+                description,
+                date_post,
+                localisation,
+                latitude,
+                longitude,
+                filename,
+                current_user.Username,
+            ),
+        )
+        db.commit()
+        flash("Post publié.")
+        return redirect(url_for("main.index"))
+
+    return render_template("publish.html")

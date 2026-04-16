@@ -28,9 +28,11 @@
             </div>
 
             <div class="nav-links">
-                <a href="#" class="btn btn-post">New Post</a>
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post"
+                    >Publier</a
+                >
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-logout"
-                    >Logout</a
+                    >Sign Out</a
                 >
             </div>
         </div>

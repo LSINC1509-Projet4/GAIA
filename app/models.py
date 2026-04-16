@@ -20,12 +20,12 @@ CREATE TABLE IF NOT EXISTS Posts (
     Titre text NOT NULL ,
     Description TEXT,
     Commentaire TEXT ,
-    Date DATE NOT NULL,
+    Date TIMESTAMP NOT NULL,
     Localisation TEXT NOT NULL,
     Latitude REAL NOT NULL,
     Longitude REAL NOT NULL,
     Badges INTEGER ,
-    Username TEXT NOT NULL,
+    Username TEXT,
     Photo TEXT NOT NULL
 );
 """
@@ -43,6 +43,7 @@ class Post:
     def __init__(
         self,
         Id,
+        Titre,
         Commentaires,
         Date,
         Localisation,
@@ -53,6 +54,7 @@ class Post:
         Photo,
     ):
         self.id = Id
+        self.Titre = Titre
         self.Date = Date
         self.Localisation = Localisation
         self.Latitude = Latitude
