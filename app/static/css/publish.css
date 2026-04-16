@@ -6,7 +6,7 @@ body {
     margin: 0;
     padding: 20px;
     background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     box-sizing: border-box;
 }
 
@@ -137,8 +137,28 @@ button[type="submit"]:hover {
     background-color: #ddd;
 }
 
+#map-picker {
+    height: 300px;
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #e2e8f0;
+    cursor: crosshair;
+}
+.coords input[readonly] {
+    background-color: #f7fafc;
+    cursor: not-allowed;
+    color: #718096;
+}
+
 @media (max-width: 480px) {
-    .container { padding: 25px 15px; }
-    .button-group { flex-direction: column; }
-    .coords { flex-direction: column; }
+    .container {
+        padding: 25px 15px;
+    }
+    .button-group {
+        flex-direction: column;
+    }
+    .coords {
+        flex-direction: column;
+    }
 }

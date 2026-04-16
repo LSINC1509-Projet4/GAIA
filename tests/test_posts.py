@@ -42,8 +42,8 @@ def seed_file_post():
                     "CUTE.",
                     datetime.now().strftime("%Y-%m-%d"),
                     "MONS",
-                    45.18,
-                    5.72,
+                    50.585,
+                    3.887,
                     10,
                     "TestUser",
                     filename,  # This is the string (e.g., 'test_discovery_1776288311.png')
