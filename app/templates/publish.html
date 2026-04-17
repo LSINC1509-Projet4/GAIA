@@ -38,15 +38,19 @@
             {% endfor %} {% endif %} {% endwith %}
 
             <form method="post" enctype="multipart/form-data">
-                <label for="Titre">Titre *</label>
-                <input
-                    type="text"
-                    id="Titre"
-                    name="Titre"
-                    placeholder="Ex: Renard roux près de la forêt"
-                    value="{{ post.Titre if post else '' }}"
-                    required
-                />
+                <div class="suggestions-container">
+                    <label for="Titre">Titre *</label>
+                    <input
+                        type="text"
+                        id="Titre"
+                        name="Titre"
+                        placeholder="Ex: Renard roux"
+                        value="{{ post.Titre if post else '' }}"
+                        autocomplete="off"
+                        required
+                    />
+                    <div id="suggestions"></div>
+                </div>
 
                 <label for="Description">Description</label>
                 <textarea
@@ -119,6 +123,7 @@
         </div>
 
         <script>
+            /** 1. MAP PICKER LOGIC **/
             var latInput = document.getElementById("Latitude");
             var lngInput = document.getElementById("Longitude");
             var initLat = latInput.value ? parseFloat(latInput.value) : 50.45;
@@ -126,7 +131,7 @@
             var map = L.map("map-picker").setView([initLat, initLng], 10);
 
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "&copy; OpenStreetMap",
+                attribution: "&copy; OSM",
             }).addTo(map);
 
             var marker;
@@ -137,16 +142,58 @@
             map.on("click", function (e) {
                 var lat = e.latlng.lat;
                 var lng = e.latlng.lng;
-
-                // Update visible inputs
                 document.getElementById("Latitude").value = lat.toFixed(6);
                 document.getElementById("Longitude").value = lng.toFixed(6);
-
-                // Update marker position
                 if (marker) {
                     marker.setLatLng(e.latlng);
                 } else {
                     marker = L.marker(e.latlng).addTo(map);
+                }
+            });
+
+            /** 2. ANIMAL AUTOCOMPLETE LOGIC **/
+            const titreInput = document.getElementById("Titre");
+            const suggestionsBox = document.getElementById("suggestions");
+
+            titreInput.addEventListener("input", async () => {
+                const query = titreInput.value;
+                if (query.length < 2) {
+                    suggestionsBox.style.display = "none";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/animals?q=${query}`);
+                    const animals = await response.json();
+
+                    if (animals.length > 0) {
+                        suggestionsBox.innerHTML = "";
+                        animals.forEach((animal) => {
+                            const div = document.createElement("div");
+                            div.className = "suggestion-item";
+                            div.innerHTML = `
+                                <strong>${animal.name}</strong>
+                                <span class="scientific-name">${animal.scientific}</span>
+                            `;
+                            div.onclick = () => {
+                                titreInput.value = animal.name;
+                                suggestionsBox.style.display = "none";
+                            };
+                            suggestionsBox.appendChild(div);
+                        });
+                        suggestionsBox.style.display = "block";
+                    } else {
+                        suggestionsBox.style.display = "none";
+                    }
+                } catch (error) {
+                    console.error("Autocomplete error:", error);
+                }
+            });
+
+            // Close suggestions when clicking outside
+            document.addEventListener("click", (e) => {
+                if (e.target !== titreInput) {
+                    suggestionsBox.style.display = "none";
                 }
             });
         </script>
