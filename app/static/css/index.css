@@ -55,6 +55,7 @@ body {
     margin-bottom: 20px;
     border-left: 6px solid #48bb78;
     transition: transform 0.2s ease;
+    position: relative; /* AJOUT : nécessaire pour le bouton X absolu */
 }
 
 .post-title {
@@ -88,6 +89,24 @@ body {
     display: block;
 }
 
+/* --- BOUTON SUPPRIMER (X) --- */
+.btn-delete-post {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #5b6269;
+    font-size: 14px;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.btn-delete-post:hover {
+    color: #e53e3e;
+}
 
 /* --- 4. ACTION BUTTONS --- */
 .post-actions {
@@ -124,19 +143,16 @@ body {
     background-color: #f0fff4;
 }
 
-
-
-
 .post-map {
     height: 200px;
     width: 100%;
     border-radius: 8px;
     margin: 15px 0;
     border: 1px solid #e2e8f0;
-    z-index: 1; /* Keeps map below the navbar if scrolling */
+    z-index: 1;
 }
-/* --- 5. COMMENTS --- */
 
+/* --- 5. COMMENTS --- */
 .comment-section {
     margin-top: 8px;
 }
@@ -211,6 +227,7 @@ body {
     color: #2f855a;
     background-color: #f0fff4;
 }
+
 /* --- 6. BUTTONS & FLASH --- */
 .btn {
     padding: 8px 18px;
@@ -241,4 +258,52 @@ body {
     max-width: 600px;
     border-radius: 8px;
     box-sizing: border-box;
+}
+.post-options {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.post-dropdown {
+    position: absolute;
+    right: 0;
+    top: 28px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.post-dropdown a,
+.post-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    color: #2d3748;
+    text-decoration: none;
+    font-size: 14px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    box-sizing: border-box;
+}
+
+.post-dropdown a:hover,
+.post-dropdown button:hover {
+    background-color: #f0fff4;
+}
+
+.post-dropdown form {
+    margin: 0;
+}
+
+.post-dropdown.hidden {
+    display: none;
 }

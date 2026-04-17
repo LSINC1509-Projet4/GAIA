@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GAIA - Carte</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='Logo.png') }}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="flash-msg">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Navbar flottante -->
+    <nav class="navbar">
+        <div class="user-info-block">
+            <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA" class="nav-logo" />
+            <span class="user-greeting">{{ current_user.Username }}</span>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('main.index') }}" class="btn btn-feed">
+                <i class="fa-solid fa-newspaper"></i> Feed
+            </a>
+            <a href="{{ url_for('main.publish') }}" class="btn btn-post">
+                <i class="fa-solid fa-plus"></i> Publier
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- Carte plein écran -->
+    <div id="map-full"></div>
+
+    <!-- Badge compteur -->
+    <div class="map-counter">
+        <i class="fa-solid fa-leaf"></i> {{ posts|length }} observation{{ 's' if posts|length > 1 else '' }}
+    </div>
+
+    <!-- Panneau bas (bottom sheet) -->
+    <div id="post-panel" class="post-panel">
+        <div class="panel-handle"></div>
+        <button class="panel-close" onclick="closePanel()" title="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="panel-body">
+            <img id="panel-photo" class="panel-photo" src="" alt="Photo" style="display:none;" />
+            <div class="panel-info">
+                <div class="panel-meta">
+                    <span id="panel-username"></span>
+                    <span>•</span>
+                    <span id="panel-date"></span>
+                </div>
+                <div id="panel-location" class="panel-location"></div>
+                <div id="panel-title" class="panel-title"></div>
+                <p id="panel-desc" class="panel-desc"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var posts = {{ posts | tojson }};
+        var activeMarker = null;
+
+        var map = L.map("map-full", { zoomControl: false }).setView([50.45, 4.5], 8);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap"
+        }).addTo(map);
+
+        L.control.zoom({ position: "bottomleft" }).addTo(map);
+
+        var gaiaIcon = L.divIcon({
+            className: "",
+            html: '<div class="gaia-marker"><i class="fa-solid fa-leaf"></i></div>',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+        });
+
+        posts.forEach(function(post) {
+            if (post.Latitude == null || post.Longitude == null) return;
+
+            var marker = L.marker([post.Latitude, post.Longitude], { icon: gaiaIcon });
+
+            marker.on("click", function() {
+                if (activeMarker && activeMarker !== this) {
+                    activeMarker.getElement().querySelector(".gaia-marker").classList.remove("active");
+                }
+                this.getElement().querySelector(".gaia-marker").classList.add("active");
+                activeMarker = this;
+                openPanel(post);
+            });
+
+            marker.addTo(map);
+        });
+
+        map.on("click", function() {
+            closePanel();
+        });
+
+        function openPanel(post) {
+            document.getElementById("panel-username").textContent = post.Username;
+            document.getElementById("panel-date").textContent = post.Date || "";
+            document.getElementById("panel-location").textContent = post.Localisation ? "📍 " + post.Localisation : "";
+            document.getElementById("panel-title").textContent = post.Titre;
+            document.getElementById("panel-desc").textContent = post.Description || "";
+
+            var photo = document.getElementById("panel-photo");
+            if (post.Photo) {
+                photo.src = "/static/uploads/" + post.Photo;
+                photo.style.display = "block";
+            } else {
+                photo.style.display = "none";
+            }
+
+            document.getElementById("post-panel").classList.add("open");
+        }
+
+        function closePanel() {
+            document.getElementById("post-panel").classList.remove("open");
+            if (activeMarker) {
+                var el = activeMarker.getElement();
+                if (el) el.querySelector(".gaia-marker").classList.remove("active");
+                activeMarker = null;
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -29,7 +29,7 @@
                     alt="GAIA Logo"
                     onerror="this.style.display = 'none'"
                 />
-                <h1>Nouvelle observation</h1>
+                <h1>{{ "Modifier l'observation" if post else "Nouvelle observation" }}</h1>
             </div>
 
             {% with messages = get_flashed_messages() %} {% if messages %} {%
@@ -45,6 +45,7 @@
                         id="Titre"
                         name="Titre"
                         placeholder="Ex: Renard roux"
+                        value="{{ post.Titre if post else '' }}"
                         autocomplete="off"
                         required
                     />
@@ -56,7 +57,7 @@
                     id="Description"
                     name="Description"
                     placeholder="Décrivez votre observation..."
-                ></textarea>
+                >{{ post.Description if post else '' }}</textarea>
 
                 <label for="Localisation">Nom du lieu *</label>
                 <input
@@ -64,6 +65,7 @@
                     id="Localisation"
                     name="Localisation"
                     placeholder="Ex: Forêt de Soignes"
+                    value="{{ post.Localisation if post else '' }}"
                     required
                 />
 
@@ -78,6 +80,8 @@
                             id="Latitude"
                             name="Latitude"
                             step="any"
+                            placeholder="Auto-rempli"
+                            value="{{ post.Latitude if post else '' }}"
                             readonly
                             required
                         />
@@ -89,38 +93,52 @@
                             id="Longitude"
                             name="Longitude"
                             step="any"
+                            placeholder="Auto-rempli"
+                            value="{{ post.Longitude if post else '' }}"
                             readonly
                             required
                         />
                     </div>
                 </div>
 
-                <label for="Photo">Photo *</label>
+                <label for="Photo">Photo {% if not post %}*{% endif %}</label>
+                {% if post and post.Photo %}
+                <p style="font-size:0.85em; color:#555;">Photo actuelle : {{ post.Photo }} (laisser vide pour la conserver)</p>
+                {% endif %}
                 <input
                     type="file"
                     id="Photo"
                     name="Photo"
                     accept="image/*"
-                    required
+                    {{ 'required' if not post else '' }}
                 />
 
                 <div class="button-group">
                     <a href="{{ url_for('main.index') }}" class="btn-back"
                         >Annuler</a
                     >
-                    <button type="submit">Publier</button>
+                    <button type="submit">{{ "Modifier" if post else "Publier" }}</button>
                 </div>
             </form>
         </div>
 
         <script>
             /** 1. MAP PICKER LOGIC **/
-            var map = L.map("map-picker").setView([50.45, 3.95], 10);
+            var latInput = document.getElementById("Latitude");
+            var lngInput = document.getElementById("Longitude");
+            var initLat = latInput.value ? parseFloat(latInput.value) : 50.45;
+            var initLng = lngInput.value ? parseFloat(lngInput.value) : 3.95;
+            var map = L.map("map-picker").setView([initLat, initLng], 10);
+
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 attribution: "&copy; OSM",
             }).addTo(map);
 
             var marker;
+            if (latInput.value && lngInput.value) {
+                marker = L.marker([initLat, initLng]).addTo(map);
+            }
+
             map.on("click", function (e) {
                 var lat = e.latlng.lat;
                 var lng = e.latlng.lng;
