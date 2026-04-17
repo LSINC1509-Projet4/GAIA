@@ -28,7 +28,27 @@ CREATE TABLE IF NOT EXISTS Posts (
     Username TEXT NOT NULL,
     Photo TEXT NOT NULL
 );
+
+-- Table des Niveaux Utilisateurs
+CREATE TABLE IF NOT EXISTS UserStats (
+    UserId INTEGER PRIMARY KEY AUTOINCREMENT,
+    NbrePostsAlltime INTEGER DEFAULT 0,
+    NBreLikesAlltime INTEGER DEFAULT 0,
+    TotalXp REAL DEFAULT 0,
+    CurrentLevel INTEGER DEFAULT 1,
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+
+-- Table des Likes
+CREATE TABLE IF NOT EXISTS Likes (
+    UserId INTEGER NOT NULL,
+    PostId INTEGER NOT NULL,
+    PRIMARY KEY (UserId, PostId),
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (PostId) REFERENCES Posts(Id)
+);
 """
+
 
 
 class User(UserMixin):
