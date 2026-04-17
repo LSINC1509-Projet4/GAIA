@@ -1,10 +1,12 @@
 import os
 from datetime import datetime
 
+import requests
 from flask import (
     Blueprint,
     current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -25,9 +27,7 @@ def index():
     posts = db.execute(
         "SELECT Id, Titre, Description, Commentaire, strftime('%Y-%m-%d', Date) as Date, Localisation, Latitude, Longitude, Badges, Username, Photo FROM Posts ORDER BY Date DESC"
     ).fetchall()
-    comments = db.execute(
-        "SELECT * FROM Comments ORDER BY Date ASC"
-    ).fetchall()
+    comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
     return render_template("index.html", posts=posts, comments=comments)
 
 
@@ -98,6 +98,7 @@ def publish():
 
     return render_template("publish.html")
 
+
 @main_bp.route("/post/<int:post_id>/comment", methods=["POST"])
 @login_required
 def add_comment(post_id):
@@ -107,7 +108,39 @@ def add_comment(post_id):
     db = get_db()
     db.execute(
         "INSERT INTO Comments (Contenu, Date, Username, Post_Id, Parent_Id) VALUES (?, ?, ?, ?, ?)",
-        (contenu, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), current_user.Username, post_id, parent_id)
+        (
+            contenu,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            current_user.Username,
+            post_id,
+            parent_id,
+        ),
     )
     db.commit()
     return redirect(url_for("main.index"))
+
+
+@main_bp.route("/api/animals")
+@login_required
+def get_animals():
+    query = request.args.get("q", "")
+    if len(query) < 2:
+        return jsonify([])
+
+    url = f"https://api.inaturalist.org/v1/taxa/autocomplete?q={query}&locale=fr"
+    try:
+        response = requests.get(url, timeout=5)
+        data = response.json()
+
+        results = []
+        for item in data.get("results", []):
+            results.append(
+                {
+                    "name": item.get("preferred_common_name") or item.get("name"),
+                    "scientific": item.get("name"),
+                }
+            )
+        return jsonify(results)
+    except Exception as e:
+        print(f"Error fetching from iNaturalist: {e}")
+        return jsonify([])
