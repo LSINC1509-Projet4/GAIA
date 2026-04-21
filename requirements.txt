@@ -5,3 +5,4 @@ gunicorn
 coverage
 pdoc3
 pyinaturalist
+pandas
