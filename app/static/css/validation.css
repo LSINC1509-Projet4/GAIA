@@ -1,75 +1,110 @@
-/* Inspiration from your Base CSS */
+/* --- 1. BASE (Inspired by your CSS) --- */
 body {
     margin: 0;
-    padding: 20px;
+    padding: 0;
     background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
-    font-family: "Segoe UI", sans-serif;
-    overflow: hidden; /* Prevent scrolling while swiping */
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center; /* Horizontal center */
+    align-items: center; /* Vertical center */
+    overflow: hidden; /* Prevent scrolling during swipe */
 }
 
+/* --- 2. TINDER STACK CONTAINER --- */
 .tinder-container {
     position: relative;
-    height: 80vh;
+    height: 550px;
     width: 100%;
     max-width: 400px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
 }
 
+/* --- 3. SWIPE CARD --- */
 .swipe-card {
     position: absolute;
-    width: 100%;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 380px;
+    background-color: rgba(255, 255, 255, 0.98);
     padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
     transition:
         transform 0.3s ease,
         opacity 0.3s ease;
     cursor: grab;
     border-bottom: 8px solid #48bb78; /* Your green */
+
+    /* Initial centering */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    touch-action: none; /* Critical for mobile swipe */
+}
+
+.swipe-card:active {
+    cursor: grabbing;
 }
 
 .swipe-card img {
     width: 100%;
-    height: 250px;
+    height: 280px;
     object-fit: cover;
-    border-radius: 15px;
+    border-radius: 12px;
     pointer-events: none;
+    margin-bottom: 15px;
 }
 
-.swipe-card h2 {
+.post-title {
+    font-size: 1.4rem;
+    margin: 0 0 5px 0;
     color: #1a202c;
-    margin: 15px 0 5px 0;
-}
-.swipe-card p {
-    color: #718096;
-    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-/* Indications visual on swipe */
+.post-meta {
+    font-size: 0.85rem;
+    color: #718096;
+    margin-bottom: 10px;
+}
+
+.location-tag {
+    color: #2f855a;
+    font-weight: 600;
+}
+
+/* --- 4. SWIPE STAMPS --- */
 .status-stamp {
     position: absolute;
-    top: 20px;
+    top: 40px;
     padding: 10px 20px;
     border-radius: 10px;
-    font-weight: bold;
-    text-transform: uppercase;
+    font-weight: 900;
+    font-size: 1.5rem;
     opacity: 0;
-    transform: rotate(-15deg);
+    z-index: 10;
+    pointer-events: none;
+    border: 5px solid;
 }
 .stamp-verify {
-    border: 4px solid #48bb78;
     color: #48bb78;
-    right: 20px;
+    border-color: #48bb78;
+    right: 30px;
+    transform: rotate(15deg);
 }
 .stamp-edit {
-    border: 4px solid #ecc94b;
     color: #ecc94b;
-    left: 20px;
+    border-color: #ecc94b;
+    left: 30px;
+    transform: rotate(-15deg);
 }
 
-/* Hidden Edit Form */
+/* --- 5. EDIT OVERLAY --- */
 .edit-form-overlay {
     display: none;
     position: fixed;
@@ -77,8 +112,54 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(26, 32, 44, 0.85);
     z-index: 2000;
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.edit-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.2);
+}
+
+.edit-input {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.btn-confirm {
+    background-color: #48bb78;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: none;
+    border: none;
+    color: #718096;
+    width: 100%;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.empty-state {
+    text-align: center;
+    color: #22543d;
+    font-weight: 600;
 }
