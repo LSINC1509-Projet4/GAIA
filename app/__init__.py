@@ -33,4 +33,8 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
 
+    with app.app_context():
+        from app.db import init_db
+
+        init_db()
     return app

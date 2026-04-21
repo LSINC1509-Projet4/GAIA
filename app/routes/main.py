@@ -79,7 +79,16 @@ def publish():
         db = get_db()
         db.execute(
             "INSERT INTO Posts (titre, description, date, localisation, latitude, longitude, Photo, Username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (titre, description, date_post, localisation, latitude, longitude, filename, current_user.Username),
+            (
+                titre,
+                description,
+                date_post,
+                localisation,
+                latitude,
+                longitude,
+                filename,
+                current_user.Username,
+            ),
         )
         db.commit()
         flash("Post publié.")
@@ -133,13 +142,15 @@ def get_animals():
     except Exception as e:
         print(f"Error fetching from iNaturalist: {e}")
         return jsonify([])
+
+
 @main_bp.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_post(post_id):
     db = get_db()
     post = db.execute(
         "SELECT Id, Titre, Description, Localisation, Latitude, Longitude, Photo, Username FROM Posts WHERE Id = ?",
-        (post_id,)
+        (post_id,),
     ).fetchone()
 
     if post is None:
@@ -167,7 +178,7 @@ def edit_post(post_id):
 
         db.execute(
             "UPDATE Posts SET Titre=?, Description=?, Localisation=?, Latitude=?, Longitude=?, Photo=? WHERE Id=?",
-            (titre, description, localisation, latitude, longitude, filename, post_id)
+            (titre, description, localisation, latitude, longitude, filename, post_id),
         )
         db.commit()
         flash("Post modifié.")
@@ -192,7 +203,9 @@ def carte():
 @login_required
 def delete_post(post_id):
     db = get_db()
-    post = db.execute("SELECT Id, Username FROM Posts WHERE Id = ?", (post_id,)).fetchone()
+    post = db.execute(
+        "SELECT Id, Username FROM Posts WHERE Id = ?", (post_id,)
+    ).fetchone()
 
     if post is None:
         flash("Post introuvable.")
