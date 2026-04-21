@@ -1,0 +1,84 @@
+/* Inspiration from your Base CSS */
+body {
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
+    font-family: "Segoe UI", sans-serif;
+    overflow: hidden; /* Prevent scrolling while swiping */
+}
+
+.tinder-container {
+    position: relative;
+    height: 80vh;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.swipe-card {
+    position: absolute;
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    box-sizing: border-box;
+    transition:
+        transform 0.3s ease,
+        opacity 0.3s ease;
+    cursor: grab;
+    border-bottom: 8px solid #48bb78; /* Your green */
+}
+
+.swipe-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 15px;
+    pointer-events: none;
+}
+
+.swipe-card h2 {
+    color: #1a202c;
+    margin: 15px 0 5px 0;
+}
+.swipe-card p {
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+/* Indications visual on swipe */
+.status-stamp {
+    position: absolute;
+    top: 20px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: rotate(-15deg);
+}
+.stamp-verify {
+    border: 4px solid #48bb78;
+    color: #48bb78;
+    right: 20px;
+}
+.stamp-edit {
+    border: 4px solid #ecc94b;
+    color: #ecc94b;
+    left: 20px;
+}
+
+/* Hidden Edit Form */
+.edit-form-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
