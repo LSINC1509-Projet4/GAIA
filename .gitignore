@@ -91,7 +91,6 @@ venv/
 .env/
 
 
-
 # Mac os
 .DS_Store
 
