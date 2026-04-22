@@ -15,7 +15,7 @@ def seed_file_post():
         # 1. Define paths
         source_image = "app/static/panda.png"  # Using your logo as a test image
         upload_folder = "app/static/uploads"
-        filename = "test_panda.pn g"
+        filename = "test_panda.png"
         target_path = os.path.join(upload_folder, filename)
 
         # 2. Ensure the upload folder exists
