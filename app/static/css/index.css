@@ -16,7 +16,7 @@ body {
     padding: 10px 25px;
     border-radius: 15px;
     width: 100%;
-    max-width: 600px;
+    max-width: 900px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -272,7 +272,7 @@ body {
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     z-index: 10;
     min-width: 150px;
     overflow: hidden;
@@ -306,4 +306,54 @@ body {
 
 .post-dropdown.hidden {
     display: none;
+}
+
+/* --- 7. SEARCH BAR --- */
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    margin: 0 20px;
+}
+
+.search-form input[type="text"] {
+    flex: 1;
+    padding: 8px 14px;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    background-color: white;
+}
+
+.search-form input[type="text"]:focus {
+    border-color: #48bb78;
+}
+
+.search-form button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    background-color: #c6f6d5;
+    color: #22543d;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s;
+}
+
+.search-form button:hover {
+    background-color: #9ae6b4;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }

@@ -24,8 +24,12 @@ main_bp = Blueprint("main", __name__)
 @login_required
 def index():
     db = get_db()
+    search = request.args.get("q", "").strip()
     posts = db.execute(
-        "SELECT Id, Titre, Description, Commentaire, strftime('%Y-%m-%d', Date) as Date, Localisation, Latitude, Longitude, Badges, Username, Photo FROM Posts ORDER BY Date DESC"
+        "SELECT Id, Titre, Description, Commentaire, strftime('%Y-%m-%d', Date) as Date, Localisation, Latitude, Longitude, Badges, Username, Photo "
+        "FROM Posts WHERE Titre LIKE ? OR Description LIKE ? OR Localisation LIKE ? "
+        "ORDER BY Date DESC",
+        (f"%{search}%", f"%{search}%", f"%{search}%")
     ).fetchall()
     comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
     return render_template("index.html", posts=posts, comments=comments)
