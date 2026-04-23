@@ -58,8 +58,7 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
+
 
 # Flask stuff:
 instance/
@@ -91,8 +90,6 @@ __pycache__/
 venv/
 .env/
 
-# Base de données SQLite
-*.db
 
 # Mac os
 .DS_Store
