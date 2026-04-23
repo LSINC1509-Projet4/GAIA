@@ -36,13 +36,29 @@
                 >
             </div>
             <form method="GET" action="/" class="search-form">
-                <input
-                    type="text"
-                    name="q"
-                    placeholder="🔍 Rechercher une espèce..."
-                    value="{{ search }}"
-                />
-                <button type="submit">Rechercher</button>
+                <div class="search-input-wrapper">
+                    <input type="text" name="q" placeholder="🔍 Rechercher une espèce..." value="{{ search }}"/>
+                    {% if search or location %}
+                        <a href="/" class="btn-clear" title="Réinitialiser">✕</a>
+                    {% endif %}
+                </div>
+                <button type="button" class="btn-filter" onclick="toggleFilters()">Filtres</button>
+            
+                <div id="filters-panel" class="filters-panel hidden">
+                    <label>
+                        Localisation
+                        <select name="location">
+                            <option value="">Toutes</option>
+                            {% for loc in locations_list %}
+                                <option value="{{ loc.Localisation }}" {% if loc.Localisation == location %}selected{% endif %}>
+                                    {{ loc.Localisation }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+            
+                    <button type="submit" class="btn-apply">Appliquer</button>
+                </div>
             </form>
             <div class="nav-links">
                 <a href="{{ url_for('main.carte') }}" class="btn btn-post"
@@ -248,6 +264,10 @@
                     if (m.id !== id) m.classList.add("hidden");
                 });
                 document.getElementById(id).classList.toggle("hidden");
+            }
+            
+            function toggleFilters() {
+                document.getElementById('filters-panel').classList.toggle('hidden');
             }
 
             document.addEventListener("click", function (e) {

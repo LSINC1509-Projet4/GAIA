@@ -25,14 +25,34 @@ main_bp = Blueprint("main", __name__)
 def index():
     db = get_db()
     search = request.args.get("q", "").strip()
-    posts = db.execute(
-        "SELECT Id, Titre, Description, Commentaire, strftime('%Y-%m-%d', Date) as Date, Localisation, Latitude, Longitude, Badges, Username, Photo "
-        "FROM Posts WHERE Titre LIKE ? OR Description LIKE ? OR Localisation LIKE ? "
-        "ORDER BY Date DESC",
-        (f"%{search}%", f"%{search}%", f"%{search}%")
-    ).fetchall()
+    location = request.args.get("location", "").strip()
+    query = """SELECT Id, Titre, Description, Commentaire,
+               strftime('%Y-%m-%d', Date) as Date,
+               Localisation, Latitude, Longitude, Badges, Username, Photo
+               FROM Posts WHERE 1=1"""
+    params = []
+
+    if search:
+        query += " AND (Titre LIKE ? OR Description LIKE ? OR Localisation LIKE ?)"
+        params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
+
+    if location:
+        query += " AND Localisation = ?"
+        params.append(location)
+
+    query += " ORDER BY Date DESC"
+
+    posts = db.execute(query, params).fetchall()
     comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
-    return render_template("index.html", posts=posts, comments=comments)
+    locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
+    return render_template(
+        "index.html",
+        posts=posts,
+        comments=comments,
+        search=search,
+        location=location,
+        locations_list=locations_list,
+    )
 
 
 @main_bp.route("/register.html", methods=["GET", "POST"])
@@ -83,7 +103,16 @@ def publish():
         db = get_db()
         db.execute(
             "INSERT INTO Posts (titre, description, date, localisation, latitude, longitude, Photo, Username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (titre, description, date_post, localisation, latitude, longitude, filename, current_user.Username),
+            (
+                titre,
+                description,
+                date_post,
+                localisation,
+                latitude,
+                longitude,
+                filename,
+                current_user.Username,
+            ),
         )
         db.commit()
         flash("Post publié.")
@@ -137,13 +166,15 @@ def get_animals():
     except Exception as e:
         print(f"Error fetching from iNaturalist: {e}")
         return jsonify([])
+
+
 @main_bp.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_post(post_id):
     db = get_db()
     post = db.execute(
         "SELECT Id, Titre, Description, Localisation, Latitude, Longitude, Photo, Username FROM Posts WHERE Id = ?",
-        (post_id,)
+        (post_id,),
     ).fetchone()
 
     if post is None:
@@ -171,7 +202,7 @@ def edit_post(post_id):
 
         db.execute(
             "UPDATE Posts SET Titre=?, Description=?, Localisation=?, Latitude=?, Longitude=?, Photo=? WHERE Id=?",
-            (titre, description, localisation, latitude, longitude, filename, post_id)
+            (titre, description, localisation, latitude, longitude, filename, post_id),
         )
         db.commit()
         flash("Post modifié.")
@@ -196,7 +227,9 @@ def carte():
 @login_required
 def delete_post(post_id):
     db = get_db()
-    post = db.execute("SELECT Id, Username FROM Posts WHERE Id = ?", (post_id,)).fetchone()
+    post = db.execute(
+        "SELECT Id, Username FROM Posts WHERE Id = ?", (post_id,)
+    ).fetchone()
 
     if post is None:
         flash("Post introuvable.")
