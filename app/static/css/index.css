@@ -16,7 +16,7 @@ body {
     padding: 10px 25px;
     border-radius: 15px;
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -272,7 +272,7 @@ body {
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     z-index: 10;
     min-width: 150px;
     overflow: hidden;
@@ -306,4 +306,146 @@ body {
 
 .post-dropdown.hidden {
     display: none;
+}
+
+/* --- 7. SEARCH BAR --- */
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    margin: 0 20px;
+}
+
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+
+.filters-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 220px;
+    z-index: 20;
+}
+
+.filters-panel.hidden {
+    display: none;
+}
+
+.filters-panel label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.filters-panel select {
+    padding: 6px 10px;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.btn-filter {
+    padding: 8px 16px;
+    border: 1.5px solid #cbd5e0;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 13px;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.btn-filter:hover {
+    border-color: #48bb78;
+    color: #2f855a;
+}
+
+
+.search-form {
+    position: relative;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-wrapper input[type="text"] {
+    width: 100%;
+    padding: 8px 36px 8px 14px;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.search-input-wrapper input[type="text"]:focus {
+    border-color: #48bb78;
+}
+
+.btn-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e2e8f0;
+    color: #4a5568;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-clear:hover {
+    background: #fc8181;
+    color: white;
+}
+
+.btn-apply {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #c6f6d5;
+    color: #22543d;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s;
+}
+
+.btn-apply:hover {
+    background-color: #9ae6b4;
 }

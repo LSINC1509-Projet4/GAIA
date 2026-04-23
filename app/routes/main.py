@@ -24,11 +24,35 @@ main_bp = Blueprint("main", __name__)
 @login_required
 def index():
     db = get_db()
-    posts = db.execute(
-        "SELECT Id, Titre, Description, Commentaire, strftime('%Y-%m-%d', Date) as Date, Localisation, Latitude, Longitude, Badges, Username, Photo FROM Posts ORDER BY Date DESC"
-    ).fetchall()
+    search = request.args.get("q", "").strip()
+    location = request.args.get("location", "").strip()
+    query = """SELECT Id, Titre, Description, Commentaire,
+               strftime('%Y-%m-%d', Date) as Date,
+               Localisation, Latitude, Longitude, Badges, Username, Photo
+               FROM Posts WHERE 1=1"""
+    params = []
+
+    if search:
+        query += " AND (Titre LIKE ? OR Description LIKE ? OR Localisation LIKE ?)"
+        params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
+
+    if location:
+        query += " AND Localisation = ?"
+        params.append(location)
+
+    query += " ORDER BY Date DESC"
+
+    posts = db.execute(query, params).fetchall()
     comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
-    return render_template("index.html", posts=posts, comments=comments)
+    locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
+    return render_template(
+        "index.html",
+        posts=posts,
+        comments=comments,
+        search=search,
+        location=location,
+        locations_list=locations_list,
+    )
 
 
 @main_bp.route("/register.html", methods=["GET", "POST"])

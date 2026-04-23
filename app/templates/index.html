@@ -4,26 +4,62 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>GAIA - Feed</title>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/index.css') }}"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        />
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     </head>
     <body>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="flash-msg">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        {% with messages = get_flashed_messages() %} {% if messages %} {% for
+        message in messages %}
+        <div class="flash-msg">{{ message }}</div>
+        {% endfor %} {% endif %} {% endwith %}
 
         <div class="navbar">
             <div class="user-info-block">
-                <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
-                <span class="user-greeting">Welcome, {{ current_user.Username }}</span>
+                <img
+                    src="{{ url_for('static', filename='Logo.png') }}"
+                    alt="GAIA Logo"
+                    class="nav-logo"
+                />
+                <span class="user-greeting"
+                    >Welcome, {{ current_user.Username }}</span
+                >
             </div>
+            <form method="GET" action="/" class="search-form">
+                <div class="search-input-wrapper">
+                    <input type="text" name="q" placeholder="🔍 Rechercher une espèce..." value="{{ search }}"/>
+                    {% if search or location %}
+                        <a href="/" class="btn-clear" title="Réinitialiser">✕</a>
+                    {% endif %}
+                </div>
+                <button type="button" class="btn-filter" onclick="toggleFilters()">Filtres</button>
+            
+                <div id="filters-panel" class="filters-panel hidden">
+                    <label>
+                        Localisation
+                        <select name="location">
+                            <option value="">Toutes</option>
+                            {% for loc in locations_list %}
+                                <option value="{{ loc.Localisation }}" {% if loc.Localisation == location %}selected{% endif %}>
+                                    {{ loc.Localisation }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+            
+                    <button type="submit" class="btn-apply">Appliquer</button>
+                </div>
+            </form>
             <div class="nav-links">
                 <a href="{{ url_for('main.carte') }}" class="btn btn-post">🗺️ Map</a>
                 <a href="{{ url_for('main.publish') }}" class="btn btn-post">Post</a>
@@ -33,107 +69,143 @@
         </div>
 
         <div class="feed-container">
-            {% if posts %}
-                {% for post in posts %}
-                <div class="post-card">
-                    {% if current_user.Username == post.Username or current_user.Role == 'Admin' %}
-                    <div class="post-options">
-                        <button class="btn-delete-post" onclick="togglePostMenu('menu-{{ post.Id }}')" title="Options">
-                            <i class="fa-solid fa-ellipsis"></i>
-                        </button>
-                        <div id="menu-{{ post.Id }}" class="post-dropdown hidden">
-                            <a href="{{ url_for('main.edit_post', post_id=post.Id) }}">✏️ Modifier</a>
-                            <form method="post" action="{{ url_for('main.delete_post', post_id=post.Id) }}"
-                                onsubmit="return confirm('Supprimer ce post ?')">
-                                <button type="submit">🗑️ Supprimer</button>
-                            </form>
+            {% if posts %} {% for post in posts %}
+            <div class="post-card">
+                {% if current_user.Username == post.Username or
+                current_user.Role == 'Admin' %}
+                <div class="post-options">
+                    <button
+                        class="btn-delete-post"
+                        onclick="togglePostMenu('menu-{{ post.Id }}')"
+                        title="Options"
+                    >
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                    <div id="menu-{{ post.Id }}" class="post-dropdown hidden">
+                        <a
+                            href="{{ url_for('main.edit_post', post_id=post.Id) }}"
+                            >✏️ Modifier</a
+                        >
+                        <form
+                            method="post"
+                            action="{{ url_for('main.delete_post', post_id=post.Id) }}"
+                            onsubmit="return confirm('Supprimer ce post ?');"
+                        >
+                            <button type="submit">🗑️ Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="post-meta">
+                    Posted by <strong>{{ post.Username }}</strong> • {{
+                    post.Date }} {% if post.Localisation %}
+                    <div class="location-tag">📍 {{ post.Localisation }}</div>
+                    {% endif %}
+                </div>
+
+                <h2 class="post-title">{{ post.Titre }}</h2>
+                <p class="post-content">{{ post.Description }}</p>
+
+                {% if post.Photo %}
+                <img
+                    src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                    alt="Post image"
+                    class="post-image-main"
+                />
+                {% endif %}
+
+                <div
+                    id="map-{{ post.Id }}"
+                    class="post-map"
+                    data-lat="{{ post.Latitude }}"
+                    data-lng="{{ post.Longitude }}"
+                ></div>
+
+                <div class="post-actions">
+                    <button
+                        class="action-btn like-btn"
+                        onclick="toggleLike(this)"
+                    >
+                        Like <span class="like-count">0</span>
+                    </button>
+                    <button
+                        class="action-btn comment-btn"
+                        onclick="toggleCommentBox('comment-box-{{ post.Id }}')"
+                    >
+                        Comment
+                    </button>
+                    <button class="action-btn share-btn">Share</button>
+                </div>
+
+                <div class="comment-section">
+                    <div
+                        id="comment-box-{{ post.Id }}"
+                        class="comment-box hidden"
+                    >
+                        <form
+                            method="post"
+                            action="{{ url_for('main.add_comment', post_id=post.Id) }}"
+                        >
+                            <input type="hidden" name="Parent_Id" value="" />
+                            <textarea
+                                name="Contenu"
+                                placeholder="Ajouter un commentaire... (Enter pour envoyer)"
+                                required
+                                onkeydown="submitOnEnter(event, this)"
+                            ></textarea>
+                        </form>
+                    </div>
+                    {% for comment in comments if comment['Post_Id'] == post.Id
+                    and comment['Parent_Id'] is none %}
+                    <div class="comment">
+                        <div class="comment-meta">
+                            <strong>{{ comment['Username'] }}</strong> • {{
+                            comment['Date'] }}
                         </div>
-                    </div>
-                    {% endif %}
-                    <div class="post-meta">
-                        Posted by <strong>{{ post.Username }}</strong> • {{ post.Date }}
-                        {% if post.Localisation %}
-                        <div class="location-tag">📍 {{ post.Localisation }}</div>
-                        {% endif %}
-                    </div>
+                        <p class="comment-text">{{ comment['Contenu'] }}</p>
 
-                    <h2 class="post-title">{{ post.Titre }}</h2>
-                    <p class="post-content">{{ post.Description }}</p>
-
-                    {% if post.Photo %}
-                    <img
-                        src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
-                        alt="Post image"
-                        class="post-image-main"
-                    />
-                    {% endif %}
-
-                    <div id="map-{{ post.Id }}"
-                        class="post-map"
-                        data-lat="{{ post.Latitude }}"
-                        data-lng="{{ post.Longitude }}">
-                    </div>
-
-                    <div class="post-actions">
-                        <button class="action-btn like-btn" onclick="toggleLike(this)">
-                            Like <span class="like-count">0</span>
+                        <button
+                            class="reply-toggle-btn"
+                            onclick="toggleCommentBox('reply-box-{{ comment['Id'] }}')"
+                        >
+                            Reply
                         </button>
-                        <button class="action-btn comment-btn" onclick="toggleCommentBox('comment-box-{{ post.Id }}')">
-                            Comment
-                        </button>
-                        <button class="action-btn share-btn">
-                            Share
-                        </button>
-                    </div>
-
-                    <div class="comment-section">
-
-                        <div id="comment-box-{{ post.Id }}" class="comment-box hidden">
-                            <form method="post" action="{{ url_for('main.add_comment', post_id=post.Id) }}">
-                                <input type="hidden" name="Parent_Id" value="" />
+                        <div
+                            id="reply-box-{{ comment['Id'] }}"
+                            class="comment-box hidden"
+                        >
+                            <form
+                                method="post"
+                                action="{{ url_for('main.add_comment', post_id=post.Id) }}"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="Parent_Id"
+                                    value="{{ comment['Id'] }}"
+                                />
                                 <textarea
                                     name="Contenu"
-                                    placeholder="Ajouter un commentaire... (Enter pour envoyer)"
+                                    placeholder="Répondre... (Enter pour envoyer)"
                                     required
                                     onkeydown="submitOnEnter(event, this)"
                                 ></textarea>
                             </form>
                         </div>
-                        {% for comment in comments if comment['Post_Id'] == post.Id and comment['Parent_Id'] is none %}
-                        <div class="comment">
+                        {% for reply in comments if reply['Parent_Id'] ==
+                        comment['Id'] %}
+                        <div class="comment reply">
                             <div class="comment-meta">
-                                <strong>{{ comment['Username'] }}</strong> • {{ comment['Date'] }}
+                                <strong>{{ reply['Username'] }}</strong> • {{
+                                reply['Date'] }}
                             </div>
-                            <p class="comment-text">{{ comment['Contenu'] }}</p>
-
-                            <button class="reply-toggle-btn" onclick="toggleCommentBox('reply-box-{{ comment['Id'] }}')">
-                                Reply
-                            </button>
-                            <div id="reply-box-{{ comment['Id'] }}" class="comment-box hidden">
-                                <form method="post" action="{{ url_for('main.add_comment', post_id=post.Id) }}">
-                                    <input type="hidden" name="Parent_Id" value="{{ comment['Id'] }}" />
-                                    <textarea
-                                        name="Contenu"
-                                        placeholder="Répondre... (Enter pour envoyer)"
-                                        required
-                                        onkeydown="submitOnEnter(event, this)"
-                                    ></textarea>
-                                </form>
-                            </div>
-                            {% for reply in comments if reply['Parent_Id'] == comment['Id'] %}
-                            <div class="comment reply">
-                                <div class="comment-meta">
-                                    <strong>{{ reply['Username'] }}</strong> • {{ reply['Date'] }}
-                                </div>
-                                <p class="comment-text">{{ reply['Contenu'] }}</p>
-                            </div>
-                            {% endfor %}
+                            <p class="comment-text">{{ reply['Contenu'] }}</p>
                         </div>
                         {% endfor %}
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            {% else %}
+            </div>
+            {% endfor %} {% else %}
             <div class="post-card" style="text-align: center">
                 <p>No posts yet. Be the first to share something!</p>
             </div>
@@ -141,19 +213,25 @@
         </div>
 
         <script>
-            document.querySelectorAll('.post-map').forEach(function(el) {
-                var lat = parseFloat(el.getAttribute('data-lat'));
-                var lng = parseFloat(el.getAttribute('data-lng'));
-                var map = L.map(el.id, { scrollWheelZoom: false }).setView([lat, lng], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap'
-                }).addTo(map);
+            document.querySelectorAll(".post-map").forEach(function (el) {
+                var lat = parseFloat(el.getAttribute("data-lat"));
+                var lng = parseFloat(el.getAttribute("data-lng"));
+                var map = L.map(el.id, { scrollWheelZoom: false }).setView(
+                    [lat, lng],
+                    13,
+                );
+                L.tileLayer(
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    {
+                        attribution: "&copy; OpenStreetMap",
+                    },
+                ).addTo(map);
                 L.marker([lat, lng]).addTo(map);
             });
 
             function toggleLike(btn) {
-                const countSpan = btn.querySelector('.like-count');
-                const liked = btn.classList.toggle('liked');
+                const countSpan = btn.querySelector(".like-count");
+                const liked = btn.classList.toggle("liked");
                 countSpan.textContent = liked
                     ? parseInt(countSpan.textContent) + 1
                     : parseInt(countSpan.textContent) - 1;
@@ -162,33 +240,38 @@
             function toggleCommentBox(id) {
                 const box = document.getElementById(id);
                 if (box) {
-                    box.classList.toggle('hidden');
-                    if (!box.classList.contains('hidden')) {
-                        box.querySelector('textarea').focus();
+                    box.classList.toggle("hidden");
+                    if (!box.classList.contains("hidden")) {
+                        box.querySelector("textarea").focus();
                     }
                 }
             }
 
             function submitOnEnter(event, textarea) {
-                if (event.key === 'Enter' && !event.shiftKey) {
+                if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
-                    textarea.closest('form').submit();
+                    textarea.closest("form").submit();
                 }
             }
 
             function togglePostMenu(id) {
-                document.querySelectorAll('.post-dropdown').forEach(m => {
-                    if (m.id !== id) m.classList.add('hidden');
+                document.querySelectorAll(".post-dropdown").forEach((m) => {
+                    if (m.id !== id) m.classList.add("hidden");
                 });
-                document.getElementById(id).classList.toggle('hidden');
+                document.getElementById(id).classList.toggle("hidden");
+            }
+            
+            function toggleFilters() {
+                document.getElementById('filters-panel').classList.toggle('hidden');
             }
 
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.post-options')) {
-                    document.querySelectorAll('.post-dropdown').forEach(m => m.classList.add('hidden'));
+            document.addEventListener("click", function (e) {
+                if (!e.target.closest(".post-options")) {
+                    document
+                        .querySelectorAll(".post-dropdown")
+                        .forEach((m) => m.classList.add("hidden"));
                 }
             });
         </script>
-
     </body>
 </html>
