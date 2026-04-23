@@ -61,15 +61,10 @@
                 </div>
             </form>
             <div class="nav-links">
-                <a href="{{ url_for('main.carte') }}" class="btn btn-post"
-                    >🗺️ Carte</a
-                >
-                <a href="{{ url_for('main.publish') }}" class="btn btn-post"
-                    >Publier</a
-                >
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout"
-                    >Sign Out</a
-                >
+                <a href="{{ url_for('main.carte') }}" class="btn btn-post">🗺️ Map</a>
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post">Post</a>
+                <a href="{{ url_for('main.profile') }}" class="btn btn-post">Profile</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
             </div>
         </div>
 

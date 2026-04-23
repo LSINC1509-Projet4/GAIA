@@ -120,6 +120,17 @@ def publish():
 
     return render_template("publish.html")
 
+@main_bp.route("/profile")
+@login_required
+def profile():
+    db = get_db()
+    posts = db.execute(
+        "SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC", (current_user.Username,)
+    ).fetchall()
+    comments = db.execute(
+        "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC", (current_user.Username,)
+    ).fetchall()
+    return render_template("profile.html", posts=posts, comments=comments)
 
 @main_bp.route("/post/<int:post_id>/comment", methods=["POST"])
 @login_required

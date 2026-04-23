@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ current_user.Username }} - Profil</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    </head>
+    <body>
+        <div class="navbar">
+            <div class="user-info-block">
+                <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
+                <span class="user-greeting">Welcome, {{ current_user.Username }}</span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('main.index') }}" class="btn btn-post">Feed</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
+            </div>
+        </div>
+
+        <div class="feed-container">
+
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ current_user.Username[0].upper() }}
+                </div>
+                <div class="profile-info">
+                    <h2>{{ current_user.Username }}</h2>
+                    <span class="profile-role">{{ current_user.Role }}</span>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <div class="stat-number">{{ posts|length }}</div>
+                            <div class="stat-label">Posts</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">{{ comments|length }}</div>
+                            <div class="stat-label">Commentaires</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-actions" style="margin-bottom: 20px;">
+                <button class="action-btn" onclick="showTab('posts')" id="tab-posts">Publications</button>
+                <button class="action-btn" onclick="showTab('comments')" id="tab-comments">Commentaires</button>
+            </div>
+
+            <div id="section-posts">
+                {% if posts %}
+                    {% for post in posts %}
+                    <div class="post-card">
+                        <div class="post-meta">{{ post.Date }}</div>
+                        <h2 class="post-title">{{ post.Titre }}</h2>
+                        <p class="post-content">{{ post.Description }}</p>
+                        {% if post.Photo %}
+                        <img src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                            alt="Post image" class="post-image-main" />
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="post-card" style="text-align:center; color:#718096;">Aucune publication pour l'instant.</div>
+                {% endif %}
+            </div>
+
+            <!-- Comments tab -->
+            <div id="section-comments" style="display:none;">
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="comment-card">
+                        <div class="comment-card-meta">{{ comment.Date }}</div>
+                        <p class="comment-card-text">{{ comment.Contenu }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="comment-card" style="text-align:center; color:#718096;">Aucun commentaire pour l'instant.</div>
+                {% endif %}
+            </div>
+
+            <script>
+                function showTab(tab) {
+                    document.getElementById('section-posts').style.display = tab === 'posts' ? 'block' : 'none';
+                    document.getElementById('section-comments').style.display = tab === 'comments' ? 'block' : 'none';
+                    document.getElementById('tab-posts').classList.toggle('liked', tab === 'posts');
+                    document.getElementById('tab-comments').classList.toggle('liked', tab === 'comments');
+                }
+                showTab('posts');
+            </script>
+
+        </div>
+    </body>
+</html>
