@@ -29,6 +29,7 @@ def index():
     animal = request.args.get("animal", "").strip()
     date_from = request.args.get("date_from", "").strip()
     date_to = request.args.get("date_to", "").strip()
+    sort = request.args.get("sort", "recent")
     query = """SELECT Id, Titre, Description, Commentaire,
                strftime('%Y-%m-%d', Date) as Date,
                Localisation, Latitude, Longitude, Badges, Username, Photo
@@ -42,19 +43,26 @@ def index():
     if location:
         query += " AND Localisation = ?"
         params.append(location)
-        if animal:
-            query += " AND Titre = ?"
-            params.append(animal)
-        
-        if date_from:
-            query += " AND Date >= ?"
-            params.append(date_from)
-        
-        if date_to:
-            query += " AND Date <= ?"
-            params.append(date_to)
+    if animal:
+        query += " AND Titre = ?"
+        params.append(animal)
+    
+    if date_from:
+        query += " AND Date >= ?"
+        params.append(date_from)
+    
+    if date_to:
+        query += " AND Date <= ?"
+        params.append(date_to)
 
-    query += " ORDER BY Date DESC"
+    if sort == "old":
+        query += " ORDER BY Date ASC"
+    elif sort == "az":
+        query += " ORDER BY Titre ASC"
+    elif sort == "za":
+        query += " ORDER BY Titre DESC"
+    else:  # "recent" par défaut
+        query += " ORDER BY Date DESC"
 
     posts = db.execute(query, params).fetchall()
     comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
@@ -71,6 +79,7 @@ def index():
         date_to=date_to,
         locations_list=locations_list,
         animals_list=animals_list,
+        sort=sort,
     )
 
 

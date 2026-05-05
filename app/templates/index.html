@@ -77,7 +77,15 @@
                         Au
                         <input type="date" name="date_to" value="{{ date_to }}"/>
                     </label>
-            
+                    <label>
+                        Trier par
+                        <select name="sort">
+                            <option value="recent" {% if sort == "recent" %}selected{% endif %}>Plus récent</option>
+                            <option value="old" {% if sort == "old" %}selected{% endif %}>Plus ancien</option>
+                            <option value="az" {% if sort == "az" %}selected{% endif %}>A → Z</option>
+                            <option value="za" {% if sort == "za" %}selected{% endif %}>Z → A</option>
+                        </select>
+                    </label>
                     <button type="submit" class="btn-apply">Appliquer</button>
                 </div>
             </form>
