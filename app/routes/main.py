@@ -26,6 +26,9 @@ def index():
     db = get_db()
     search = request.args.get("q", "").strip()
     location = request.args.get("location", "").strip()
+    animal = request.args.get("animal", "").strip()
+    date_from = request.args.get("date_from", "").strip()
+    date_to = request.args.get("date_to", "").strip()
     query = """SELECT Id, Titre, Description, Commentaire,
                strftime('%Y-%m-%d', Date) as Date,
                Localisation, Latitude, Longitude, Badges, Username, Photo
@@ -39,19 +42,35 @@ def index():
     if location:
         query += " AND Localisation = ?"
         params.append(location)
+        if animal:
+            query += " AND Titre = ?"
+            params.append(animal)
+        
+        if date_from:
+            query += " AND Date >= ?"
+            params.append(date_from)
+        
+        if date_to:
+            query += " AND Date <= ?"
+            params.append(date_to)
 
     query += " ORDER BY Date DESC"
 
     posts = db.execute(query, params).fetchall()
     comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
     locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
+    animals_list = db.execute("SELECT DISTINCT Titre FROM Posts ORDER BY Titre").fetchall()
     return render_template(
         "index.html",
         posts=posts,
         comments=comments,
         search=search,
         location=location,
+        animal=animal,
+        date_from=date_from,
+        date_to=date_to,
         locations_list=locations_list,
+        animals_list=animals_list,
     )
 
 
