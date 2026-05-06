@@ -259,7 +259,8 @@ def carte():
         "Localisation, Latitude, Longitude, Username, Photo "
         "FROM Posts WHERE Latitude IS NOT NULL AND Longitude IS NOT NULL"
     ).fetchall()
-    return render_template("map.html", posts=[dict(row) for row in posts])
+    locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
+    return render_template("map.html", posts=[dict(row) for row in posts], locations_list=locations_list)
 
 
 @main_bp.route("/post/<int:post_id>/delete", methods=["POST"])
