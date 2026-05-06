@@ -26,6 +26,10 @@ def index():
     db = get_db()
     search = request.args.get("q", "").strip()
     location = request.args.get("location", "").strip()
+    animal = request.args.get("animal", "").strip()
+    date_from = request.args.get("date_from", "").strip()
+    date_to = request.args.get("date_to", "").strip()
+    sort = request.args.get("sort", "recent")
     query = """SELECT Id, Titre, Description, Commentaire,
                strftime('%Y-%m-%d', Date) as Date,
                Localisation, Latitude, Longitude, Badges, Username, Photo
@@ -39,19 +43,43 @@ def index():
     if location:
         query += " AND Localisation = ?"
         params.append(location)
+    if animal:
+        query += " AND Titre LIKE ?"
+        params.append(animal)
+    
+    if date_from:
+        query += " AND Date >= ?"
+        params.append(date_from)
+    
+    if date_to:
+        query += " AND Date <= ?"
+        params.append(date_to)
 
-    query += " ORDER BY Date DESC"
+    if sort == "old":
+        query += " ORDER BY Date ASC"
+    elif sort == "az":
+        query += " ORDER BY Titre ASC"
+    elif sort == "za":
+        query += " ORDER BY Titre DESC"
+    else:  # "recent" par défaut
+        query += " ORDER BY Date DESC"
 
     posts = db.execute(query, params).fetchall()
     comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
     locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
+    animals_list = db.execute("SELECT DISTINCT Titre FROM Posts ORDER BY Titre").fetchall()
     return render_template(
         "index.html",
         posts=posts,
         comments=comments,
         search=search,
         location=location,
+        animal=animal,
+        date_from=date_from,
+        date_to=date_to,
         locations_list=locations_list,
+        animals_list=animals_list,
+        sort=sort,
     )
 
 
@@ -250,7 +278,8 @@ def carte():
         "Localisation, Latitude, Longitude, Username, Photo "
         "FROM Posts WHERE Latitude IS NOT NULL AND Longitude IS NOT NULL"
     ).fetchall()
-    return render_template("map.html", posts=[dict(row) for row in posts])
+    locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
+    return render_template("map.html", posts=[dict(row) for row in posts], locations_list=locations_list)
 
 
 @main_bp.route("/post/<int:post_id>/delete", methods=["POST"])
