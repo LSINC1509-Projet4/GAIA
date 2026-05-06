@@ -19,7 +19,6 @@ def calcul_levels(xp):
     if xp <= 0:
         return 1
 
-    import math
     #  Niveau = sqrt(XP / factor)
     level = math.floor(math.sqrt(xp / 10))
 
