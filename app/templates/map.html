@@ -128,7 +128,7 @@
         
         function applyFilters() {
             var search = document.getElementById("filter-search").value.toLowerCase();
-            var location = document.getElementById("filter-location").value;
+            var location = document.getElementById("filter-location").value.toLowerCase();
             var dateFrom = document.getElementById("filter-date-from").value;
             var dateTo = document.getElementById("filter-date-to").value;
         
@@ -139,7 +139,7 @@
                 var marker = item.marker;
         
                 var matchSearch = !search || post.Titre.toLowerCase().includes(search);
-                var matchLocation = !location || post.Localisation === location;
+                var matchLocation = !location || post.Localisation.toLowerCase() === location;
                 var matchDateFrom = !dateFrom || post.Date >= dateFrom;
                 var matchDateTo = !dateTo || post.Date <= dateTo;
         
