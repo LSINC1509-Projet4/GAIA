@@ -57,6 +57,18 @@ CREATE TABLE IF NOT EXISTS Comments (
     FOREIGN KEY (Post_Id) REFERENCES Posts(Id),
     FOREIGN KEY (Parent_Id) REFERENCES Comments(Id)
 );
+ -- Table signalements 
+CREATE TABLE REPORT(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reporter_id INTEGER NOT NULL,
+    post_id INTEGER,
+    comment_id INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (reporter_id) REFERENCES Users(id),
+    FOREIGN KEY (post_id) REFERENCES Posts(id),
+    FOREIGN KEY (comment_id) REFERENCES Comments(id)
+);
+
 """
 
 

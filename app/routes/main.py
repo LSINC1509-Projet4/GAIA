@@ -247,7 +247,26 @@ def profile():
         "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC",
         (current_user.Username,)
     ).fetchall()
-    return render_template("profile.html", posts=posts, comments=comments)
+    profile_user = {"Username": current_user.Username, "Role": current_user.Role}
+    return render_template("profile.html", posts=posts, comments=comments, profile_user=profile_user)
+
+@main_bp.route("/profile/<username>")
+@login_required
+def user_profile(username):
+    """
+    Input : username
+    -> Recupere le role, les comm, les posts de l'utilisateurs et on fill la page profile avec
+    """
+    db = get_db()
+    role = db.execute("SELECT Role FROM Users WHERE Username = ?", (username,)).fetchone()["Role"]
+    posts = db.execute(
+        "SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC", (username,)
+    ).fetchall()
+    comments = db.execute(
+        "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC", (username,)
+    ).fetchall()
+    profile_user = {"Username": username, "Role": role}
+    return render_template("profile.html", posts=posts, comments=comments, profile_user=profile_user)
 
 
 @main_bp.route("/post/<int:post_id>/comment", methods=["POST"])

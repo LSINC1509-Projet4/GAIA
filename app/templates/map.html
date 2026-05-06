@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GAIA - Carte</title>
+    <title>GAIA - Map</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='Logo.png') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -182,7 +182,7 @@
         function openPanel(post) {
             document.getElementById("panel-username").textContent = post.Username;
             document.getElementById("panel-date").textContent = post.Date || "";
-            document.getElementById("panel-location").textContent = post.Localisation ? "📍 " + post.Localisation : "";
+            document.getElementById("panel-location").textContent = post.Localisation ? post.Localisation : "";
             document.getElementById("panel-title").textContent = post.Titre;
             document.getElementById("panel-desc").textContent = post.Description || "";
         

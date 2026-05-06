@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{{ current_user.Username }} - Profil</title>
+        <title>{{ profile_user.Username }} - Profil</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -12,7 +12,7 @@
         <div class="navbar">
             <div class="user-info-block">
                 <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
-                <span class="user-greeting">Welcome, {{ current_user.Username }}</span>
+                <span class="user-greeting">Hey, {{ current_user.Username }}</span>
             </div>
             <div class="nav-links">
                 <a href="{{ url_for('main.index') }}" class="btn btn-post">Feed</a>
@@ -24,11 +24,11 @@
 
             <div class="profile-header">
                 <div class="profile-avatar">
-                    {{ current_user.Username[0].upper() }}
+                    {{ profile_user.Username[0].upper() }}
                 </div>
                 <div class="profile-info">
-                    <h2>{{ current_user.Username }}</h2>
-                    <span class="profile-role">{{ current_user.Role }}</span>
+                    <h2>{{ profile_user.Username }}</h2>
+                    <span class="profile-role">{{ profile_user.Role }}</span>
                     <div class="profile-stats">
                         <div class="stat">
                             <div class="stat-number">{{ posts|length }}</div>
@@ -36,15 +36,15 @@
                         </div>
                         <div class="stat">
                             <div class="stat-number">{{ comments|length }}</div>
-                            <div class="stat-label">Commentaires</div>
+                            <div class="stat-label">Comments</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="post-actions" style="margin-bottom: 20px;">
-                <button class="action-btn" onclick="showTab('posts')" id="tab-posts">Publications</button>
-                <button class="action-btn" onclick="showTab('comments')" id="tab-comments">Commentaires</button>
+                <button class="action-btn" onclick="showTab('posts')" id="tab-posts">Posts</button>
+                <button class="action-btn" onclick="showTab('comments')" id="tab-comments">Comments</button>
             </div>
 
             <div id="section-posts">
@@ -61,7 +61,7 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="post-card" style="text-align:center; color:#718096;">Aucune publication pour l'instant.</div>
+                    <div class="post-card" style="text-align:center; color:#718096;">No post yet.</div>
                 {% endif %}
             </div>
 
@@ -75,7 +75,7 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="comment-card" style="text-align:center; color:#718096;">Aucun commentaire pour l'instant.</div>
+                    <div class="comment-card" style="text-align:center; color:#718096;">No comment yet.</div>
                 {% endif %}
             </div>
 
