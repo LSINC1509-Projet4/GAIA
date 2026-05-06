@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS Comments (
 );
 
  -- Table signalements 
-CREATE TABLE REPORT(
+CREATE TABLE IF NOT EXISTS Report(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     reporter_id INTEGER NOT NULL,
     post_id INTEGER,
