@@ -126,8 +126,12 @@
                 </div>
                 {% endif %}
                 <div class="post-meta">
-                    Posted by <strong>{{ post.Username }}</strong> • {{
-                    post.Date }} {% if post.Localisation %}
+                    Posted by <strong>{{ post.Username }}</strong>
+                    <span class="badge-title">
+                        {{ get_badge(post.CurrentLevel) }} (Niveau: {{
+                        post.CurrentLevel or 1 }})</span
+                    >
+                    • {{ post.Date }} {% if post.Localisation %}
                     <div class="location-tag">📍 {{ post.Localisation }}</div>
                     {% endif %}
                 </div>
@@ -142,6 +146,16 @@
                     class="post-image-main"
                 />
                 {% endif %}
+                <form
+                    action="{{ url_for('main.like_post', post_id=post.Id) }}"
+                    method="POST"
+                    style="display: inline"
+                >
+                    <button type="submit" class="btn-water">
+                        Arroser ({{ post.LikeCount }})
+                    </button>
+                </form>
+                {% if post.Commentaire %}
 
                 <div
                     id="map-{{ post.Id }}"
