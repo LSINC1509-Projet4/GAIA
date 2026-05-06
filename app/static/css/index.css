@@ -459,3 +459,31 @@ body {
 .btn-apply:hover {
     background-color: #9ae6b4;
 }
+
+/* --- 6. BADGES ET LIKES --- */
+.badge-title {
+    background-color: #2e7d32;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+
+.btn-water {
+    background-color: #e0f7fa;
+    border: 1px solid #00acc1;
+    color: #00838f;
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.btn-water:hover {
+    background-color: #b2ebf2;
+}

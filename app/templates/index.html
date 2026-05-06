@@ -126,9 +126,12 @@
                 </div>
                 {% endif %}
                 <div class="post-meta">
-                    Posted by <a href="{{ url_for('main.user_profile', username=post.Username) }}" class="username-link"><strong>{{ post.Username }}</strong></a> • {{
-                    post.Date }} {% if post.Localisation %}
-                    <div class="location-tag"> {{ post.Localisation }}</div>
+                    Posted by <a href="{{ url_for('main.user_profile', username=post.Username) }}" class="username-link"><strong>{{ post.Username }}</strong></a>
+                    <span class="badge-title">
+                        {{ get_badge(post.CurrentLevel) }} (Niveau: {{
+                        post.CurrentLevel or 1 }})</span>
+                    • {{ post.Date }} {% if post.Localisation %}
+                    <div class="location-tag">📍 {{ post.Localisation }}</div>
                     {% endif %}
                 </div>
 
@@ -142,6 +145,16 @@
                     class="post-image-main"
                 />
                 {% endif %}
+                <form
+                    action="{{ url_for('main.like_post', post_id=post.Id) }}"
+                    method="POST"
+                    style="display: inline"
+                >
+                    <button type="submit" class="btn-water">
+                        Arroser ({{ post.LikeCount }})
+                    </button>
+                </form>
+                {% if post.Commentaire %}
 
                 <div
                     id="map-{{ post.Id }}"
