@@ -6,7 +6,7 @@ body {
     margin: 0;
     padding: 20px;
     background: linear-gradient(135deg, #ccfcd4 0%, #9df8b4 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     box-sizing: border-box;
 }
 
@@ -137,8 +137,62 @@ button[type="submit"]:hover {
     background-color: #ddd;
 }
 
+#map-picker {
+    height: 300px;
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #e2e8f0;
+    cursor: crosshair;
+}
+
+.suggestions-container {
+    position: relative;
+    width: 100%;
+}
+#suggestions {
+    position: absolute;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: none;
+    margin-top: -10px;
+}
+.suggestion-item {
+    padding: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+}
+.suggestion-item:hover {
+    background-color: #f0fff4;
+}
+.scientific-name {
+    font-size: 0.75rem;
+    color: #718096;
+    font-style: italic;
+}
+
+.coords input[readonly] {
+    background-color: #f7fafc;
+    color: #a0aec0;
+    cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
-    .container { padding: 25px 15px; }
-    .button-group { flex-direction: column; }
-    .coords { flex-direction: column; }
+    .container {
+        padding: 25px 15px;
+    }
+    .button-group {
+        flex-direction: column;
+    }
+    .coords {
+        flex-direction: column;
+    }
 }

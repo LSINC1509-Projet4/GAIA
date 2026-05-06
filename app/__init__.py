@@ -2,7 +2,9 @@ import os
 
 from flask import Flask
 from flask_login import LoginManager
-
+from app.db import get_db
+from app.models import init_db as init_schema
+from app.db import init_db as init_animals
 from .db import close_db
 
 
@@ -33,4 +35,8 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
 
+    with app.app_context():
+        db = get_db()
+        init_schema(db)
+        init_animals()
     return app

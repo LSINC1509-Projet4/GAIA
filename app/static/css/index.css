@@ -1,4 +1,4 @@
-/* --- 1. BASE & BACKGROUND --- */
+/* --- 1. BASE --- */
 body {
     margin: 0;
     padding: 20px;
@@ -10,13 +10,13 @@ body {
     align-items: center;
 }
 
-/* --- 2. NAVIGATION --- */
+/* --- 2. NAVBAR --- */
 .navbar {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 10px 25px;
     border-radius: 15px;
     width: 100%;
-    max-width: 600px;
+    max-width: 900px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -41,10 +41,10 @@ body {
     color: #2d3748;
 }
 
-/* --- 3. FEED & REDDIT-STYLE CARDS --- */
+/* --- 3. FEED --- */
 .feed-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
 }
 
 .post-card {
@@ -55,10 +55,7 @@ body {
     margin-bottom: 20px;
     border-left: 6px solid #48bb78;
     transition: transform 0.2s ease;
-}
-
-.post-card:hover {
-    transform: translateY(-2px);
+    position: relative; /* AJOUT : nécessaire pour le bouton X absolu */
 }
 
 .post-title {
@@ -92,31 +89,146 @@ body {
     display: block;
 }
 
-/* --- 4. COMMENTS SECTION --- */
-.comment-section {
-    background-color: #f7fafc;
-    padding: 12px 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-    border-left: 3px solid #cbd5e0;
+/* --- BOUTON SUPPRIMER (X) --- */
+.btn-delete-post {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #5b6269;
+    font-size: 14px;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s;
 }
 
-.comment-label {
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #a0aec0;
-    display: block;
+.btn-delete-post:hover {
+    color: #e53e3e;
+}
+
+/* --- 4. ACTION BUTTONS --- */
+.post-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    margin: 12px 0;
+}
+
+.action-btn {
+    padding: 6px 16px;
+    border: 1.5px solid #cbd5e0;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #718096;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    border-color: #2f855a;
+    color: #2f855a;
+    background-color: #f0fff4;
+}
+
+.action-btn.liked {
+    border-color: #2f855a;
+    color: #2f855a;
+    background-color: #f0fff4;
+}
+
+.post-map {
+    height: 200px;
+    width: 100%;
+    border-radius: 8px;
+    margin: 15px 0;
+    border: 1px solid #e2e8f0;
+    z-index: 1;
+}
+
+/* --- 5. COMMENTS --- */
+.comment-section {
+    margin-top: 8px;
+}
+
+.comment-box {
+    margin-bottom: 10px;
+}
+
+.comment-box.hidden {
+    display: none;
+}
+
+.comment-box textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    min-height: 70px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.comment-box textarea:focus {
+    border-color: #68d391;
+}
+
+.comment {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background-color: #f7fafc;
+    border-left: 3px solid #cbd5e0;
+    border-radius: 6px;
+}
+
+.comment.reply {
+    margin-left: 20px;
+    border-left-color: #48bb78;
+    background-color: #f0fff4;
+}
+
+.comment-meta {
+    font-size: 0.8rem;
+    color: #718096;
     margin-bottom: 4px;
 }
 
 .comment-text {
-    font-size: 0.92rem;
     color: #2d3748;
-    margin: 0;
+    font-size: 0.92rem;
+    margin: 0 0 6px 0;
 }
 
-/* --- 5. BUTTONS & FLASH --- */
+.reply-toggle-btn {
+    padding: 3px 10px;
+    border: 1.5px solid #cbd5e0;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #718096;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.reply-toggle-btn:hover {
+    border-color: #2f855a;
+    color: #2f855a;
+    background-color: #f0fff4;
+}
+
+/* --- 6. BUTTONS & FLASH --- */
 .btn {
     padding: 8px 18px;
     border-radius: 8px;
@@ -145,6 +257,197 @@ body {
     width: 100%;
     max-width: 600px;
     border-radius: 8px;
+    box-sizing: border-box;
+}
+.post-options {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.post-dropdown {
+    position: absolute;
+    right: 0;
+    top: 28px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.post-dropdown a,
+.post-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    color: #2d3748;
+    text-decoration: none;
+    font-size: 14px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    box-sizing: border-box;
+}
+
+.post-dropdown a:hover,
+.post-dropdown button:hover {
+    background-color: #f0fff4;
+}
+
+.post-dropdown form {
+    margin: 0;
+}
+
+.post-dropdown.hidden {
+    display: none;
+}
+
+/* --- 7. SEARCH BAR --- */
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    margin: 0 20px;
+}
+
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+
+.filters-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 220px;
+    z-index: 20;
+}
+
+.filters-panel.hidden {
+    display: none;
+}
+
+.filters-panel label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.filters-panel select {
+    padding: 6px 10px;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.btn-filter {
+    padding: 8px 16px;
+    border: 1.5px solid #cbd5e0;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 13px;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.btn-filter:hover {
+    border-color: #48bb78;
+    color: #2f855a;
+}
+
+
+.search-form {
+    position: relative;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-wrapper input[type="text"] {
+    width: 100%;
+    padding: 8px 36px 8px 14px;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.search-input-wrapper input[type="text"]:focus {
+    border-color: #48bb78;
+}
+
+.btn-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e2e8f0;
+    color: #4a5568;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-clear:hover {
+    background: #fc8181;
+    color: white;
+}
+
+.btn-apply {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #c6f6d5;
+    color: #22543d;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s;
+}
+
+.btn-apply:hover {
+    background-color: #9ae6b4;
 }
 
 /* --- 6. BADGES ET LIKES --- */

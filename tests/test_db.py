@@ -19,9 +19,9 @@ with app.app_context():
             ("TestUser", 34, "test@gaia.com", "password123"),
         )
         db.commit()
-        print("✅ Utilisateur inséré avec succès !")
+        print("Utilisateur inséré avec succès !")
     except Exception as e:
-        print(f"❌ Erreur d'insertion (peut-être qu'il existe déjà ?) : {e}")
+        print(f"Erreur d'insertion (peut-être qu'il existe déjà ?) : {e}")
 
     # On vérifie si on peut le lire
     user = db.execute(
@@ -29,6 +29,6 @@ with app.app_context():
     ).fetchone()
 
     if user:
-        print(f"🔍 Lecture réussie ! ID: {user['id']}, Pseudo: {user['username']}")
+        print(f"Lecture réussie ! ID: {user['id']}, Pseudo: {user['username']}")
     else:
-        print("❌ Impossible de retrouver l'utilisateur.")
+        print("Impossible de retrouver l'utilisateur.")

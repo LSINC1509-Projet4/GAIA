@@ -46,6 +46,16 @@ CREATE TABLE IF NOT EXISTS Likes (
     PRIMARY KEY (UserId, PostId),
     FOREIGN KEY (UserId) REFERENCES Users(Id),
     FOREIGN KEY (PostId) REFERENCES Posts(Id)
+-- Table des Commentaires
+CREATE TABLE IF NOT EXISTS Comments (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Contenu TEXT NOT NULL,
+    Date TIMESTAMP NOT NULL,
+    Username TEXT NOT NULL,
+    Post_Id INTEGER NOT NULL,
+    Parent_Id INTEGER,
+    FOREIGN KEY (Post_Id) REFERENCES Posts(Id),
+    FOREIGN KEY (Parent_Id) REFERENCES Comments(Id)
 );
 """
 
