@@ -44,7 +44,7 @@ def index():
         query += " AND Localisation = ?"
         params.append(location)
     if animal:
-        query += " AND Titre = ?"
+        query += " AND Titre LIKE ?"
         params.append(animal)
     
     if date_from:
