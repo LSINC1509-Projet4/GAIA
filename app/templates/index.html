@@ -32,17 +32,17 @@
                     class="nav-logo"
                 />
                 <span class="user-greeting"
-                    >Welcome, {{ current_user.Username }}</span
+                    >Hey, {{ current_user.Username }}</span
                 >
             </div>
             <form method="GET" action="/" class="search-form">
                 <div class="search-input-wrapper">
-                    <input type="text" name="q" placeholder="🔍 Rechercher une espèce..." value="{{ search }}"/>
+                    <input type="text" name="q" placeholder="🔎 Search ... " value="{{ search }}"/>
                     {% if search or location %}
                         <a href="/" class="btn-clear" title="Réinitialiser">✕</a>
                     {% endif %}
                 </div>
-                <button type="button" class="btn-filter" onclick="toggleFilters()">Filtres</button>
+                <button type="button" class="btn-filter" onclick="toggleFilters()">Filters</button>
             
                 <div id="filters-panel" class="filters-panel hidden">
                     <label>
@@ -61,9 +61,9 @@
                 </div>
             </form>
             <div class="nav-links">
-                <a href="{{ url_for('main.carte') }}" class="btn btn-post">🗺️ Map</a>
-                <a href="{{ url_for('main.publish') }}" class="btn btn-post">Post</a>
-                <a href="{{ url_for('main.profile') }}" class="btn btn-post">Profile</a>
+                <a href="{{ url_for('main.carte') }}" class="btn btn-post">Map</a>
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post">+</a>
+                <a href="{{ url_for('main.profile') }}" class="btn btn-post">My profile</a>
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
             </div>
         </div>
@@ -84,22 +84,22 @@
                     <div id="menu-{{ post.Id }}" class="post-dropdown hidden">
                         <a
                             href="{{ url_for('main.edit_post', post_id=post.Id) }}"
-                            >✏️ Modifier</a
+                            > Modifier</a
                         >
                         <form
                             method="post"
                             action="{{ url_for('main.delete_post', post_id=post.Id) }}"
                             onsubmit="return confirm('Supprimer ce post ?');"
                         >
-                            <button type="submit">🗑️ Supprimer</button>
+                            <button type="submit"> Supprimer</button>
                         </form>
                     </div>
                 </div>
                 {% endif %}
                 <div class="post-meta">
-                    Posted by <strong>{{ post.Username }}</strong> • {{
+                    Posted by <a href="{{ url_for('main.user_profile', username=post.Username) }}" class="username-link"><strong>{{ post.Username }}</strong></a> • {{
                     post.Date }} {% if post.Localisation %}
-                    <div class="location-tag">📍 {{ post.Localisation }}</div>
+                    <div class="location-tag"> {{ post.Localisation }}</div>
                     {% endif %}
                 </div>
 
