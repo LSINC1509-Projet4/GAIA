@@ -255,9 +255,15 @@ def profile():
         "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC",
         (current_user.Username,)
     ).fetchall()
-    profile_user = {"Id": current_user.id, "Username": current_user.Username, "Role": current_user.Role, "Ban_Status": None, "Ban_Until": None}
-    return render_template("profile.html", posts=posts, comments=comments, profile_user=profile_user, report_count=0, is_own_profile=True)
-
+    stats = db.execute(
+        "SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?",
+        (current_user.id,)
+    ).fetchone()
+    xp = stats["TotalXp"] if stats else 0
+    level = stats["CurrentLevel"] if stats else 1
+    user_badge = badge(level)
+    profile_user = {"Username": current_user.Username, "Role": current_user.Role}
+    return render_template("profile.html", posts=posts, comments=comments, profile_user=profile_user,report_count=0, is_own_profile=True,xp=xp, level=level, user_badge=user_badge)
 @main_bp.route("/profile/<username>")
 @login_required
 def user_profile(username):
@@ -272,10 +278,15 @@ def user_profile(username):
     report_count = db.execute(
         "SELECT COUNT(*) FROM REPORT WHERE Reported_User_Id = ? OR post_id IN (SELECT Id FROM Posts WHERE Username = ?)",
         (user_row["Id"], username)).fetchone()[0]
+    stats = db.execute("SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?", (user_row["Id"],)).fetchone()
+    xp = stats["TotalXp"] if stats else 0
+    level = stats["CurrentLevel"] if stats else 1
+    user_badge = badge(level)
     profile_user = {"Id": user_row["Id"], "Username": username, "Role": user_row["Role"],
                     "Ban_Status": user_row["Ban_Status"], "Ban_Until": user_row["Ban_Until"]}
     return render_template("profile.html", posts=posts, comments=comments,
                            profile_user=profile_user, report_count=report_count,
+                           xp=xp, level=level, user_badge=user_badge,
                            is_own_profile=(current_user.Username == username))
 
 
