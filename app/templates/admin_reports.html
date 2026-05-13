@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GAIA - Signalements</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="flash-msg">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="navbar">
+        <div class="user-info-block">
+            <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
+            <span class="user-greeting">Admin — {{ current_user.Username }}</span>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('main.index') }}" class="btn btn-post">Feed</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
+        </div>
+    </div>
+
+    <div class="feed-container">
+        <h2 style="color:#2f855a; margin-bottom:20px;">🚩 Posts signalés</h2>
+
+        {% if reported %}
+            {% for post in reported %}
+            <div class="post-card">
+                <div class="post-meta">
+                    <strong>{{ post.nb_reports }}</strong> signalement{{ 's' if post.nb_reports > 1 else '' }}
+                    • Posté par <strong>{{ post.Username }}</strong>
+                    • {{ post.Date }}
+                    {% if post.Localisation %}
+                    <div class="location-tag">📍 {{ post.Localisation }}</div>
+                    {% endif %}
+                </div>
+
+                <h2 class="post-title">{{ post.Titre }}</h2>
+
+                {% if post.Photo %}
+                <img src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                     alt="Photo signalée" class="post-image-main" />
+                {% endif %}
+
+                <div class="post-actions">
+                    <form method="post"
+                          action="{{ url_for('main.delete_post', post_id=post.Id) }}"
+                          onsubmit="return confirm('Supprimer ce post définitivement ?');">
+                        <button type="submit" class="action-btn" style="background:#fed7d7; color:#9b2c2c;">
+                            🗑️ Supprimer le post
+                        </button>
+                    </form>
+                    <form method="post"
+                          action="{{ url_for('main.dismiss_reports', post_id=post.Id) }}"
+                          onsubmit="return confirm('Ignorer tous les signalements ?');">
+                        <button type="submit" class="action-btn">
+                            ✕ Ignorer les signalements
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="post-card" style="text-align:center; color:#718096;">
+                Aucun post signalé pour le moment. 🌿
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

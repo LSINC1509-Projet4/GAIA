@@ -261,6 +261,41 @@ def report_post(post_id):
     return redirect(url_for("main.index"))
 
 
+@main_bp.route("/admin/reports")
+@login_required
+def admin_reports():
+    if current_user.Role != 'Admin':
+        flash("Accès réservé aux administrateurs.")
+        return redirect(url_for("main.index"))
+
+    db = get_db()
+    reported = db.execute("""
+        SELECT p.Id, p.Titre, p.Username, p.Photo, p.Localisation,
+               strftime('%Y-%m-%d', p.Date) as Date,
+               COUNT(r.id) as nb_reports
+        FROM Posts p
+        JOIN Report r ON r.post_id = p.Id
+        GROUP BY p.Id
+        ORDER BY nb_reports DESC
+    """).fetchall()
+
+    return render_template("admin_reports.html", reported=reported)
+
+
+@main_bp.route("/admin/reports/<int:post_id>/dismiss", methods=["POST"])
+@login_required
+def dismiss_reports(post_id):
+    if current_user.Role != 'Admin':
+        flash("Accès réservé aux administrateurs.")
+        return redirect(url_for("main.index"))
+
+    db = get_db()
+    db.execute("DELETE FROM Report WHERE post_id = ?", (post_id,))
+    db.commit()
+    flash("Signalements ignorés.")
+    return redirect(url_for("main.admin_reports"))
+
+
 @main_bp.route("/profile")
 @login_required
 def profile():
