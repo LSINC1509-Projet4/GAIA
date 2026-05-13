@@ -29,7 +29,7 @@ def login():
             login_user(user)
             return redirect(url_for("main.index"))
 
-        flash("Nom d'utilisateur ou mot de passe incorrect.")
+        flash("Nom d'utilisateur ou mot de passe incorrect.", "error")
 
     return render_template("login.html")
 

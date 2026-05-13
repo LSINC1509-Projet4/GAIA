@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS Users (
     Age INT NOT NULL,
     Email TEXT UNIQUE NOT NULL,
     Password TEXT NOT NULL,
-    Role TEXT DEFAULT 'utilisateur'
+    Role TEXT DEFAULT 'utilisateur',
+    Ban_Status TEXT DEFAULT NULL,
+    Ban_Until TIMESTAMP DEFAULT NULL
 );
 
 -- Table des Posts
@@ -60,18 +62,31 @@ CREATE TABLE IF NOT EXISTS Comments (
     FOREIGN KEY (Parent_Id) REFERENCES Comments(Id)
 );
 
- -- Table signalements 
-CREATE TABLE IF NOT EXISTS Report(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    reporter_id INTEGER NOT NULL,
-    post_id INTEGER,
-    comment_id INTEGER,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (reporter_id) REFERENCES Users(id),
-    FOREIGN KEY (post_id) REFERENCES Posts(id),
-    FOREIGN KEY (comment_id) REFERENCES Comments(id)
+-- Table des Signalements
+CREATE TABLE IF NOT EXISTS Report (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Reporter_Id INTEGER NOT NULL,
+    Reported_User_Id INTEGER,
+    Post_Id INTEGER,
+    Comment_Id INTEGER,
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (Reporter_Id) REFERENCES Users(Id),
+    FOREIGN KEY (Reported_User_Id) REFERENCES Users(Id),
+    FOREIGN KEY (Post_Id) REFERENCES Posts(Id),
+    FOREIGN KEY (Comment_Id) REFERENCES Comments(Id)
 );
 
+-- Table des Logs utilisateurs
+CREATE TABLE IF NOT EXISTS UserLogs (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    User_Id INTEGER NOT NULL,
+    Action_Type TEXT NOT NULL,
+    Target_Id INTEGER,
+    Target_Type TEXT,
+    Detail TEXT,
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (User_Id) REFERENCES Users(Id)
+);
 """
 
 
