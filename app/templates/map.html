@@ -76,7 +76,6 @@
         <i class="fa-solid fa-leaf"></i> {{ posts|length }} observation{{ 's' if posts|length > 1 else '' }}
     </div>
 
-    <!-- Panneau bas (bottom sheet) -->
     <div id="post-panel" class="post-panel">
         <div class="panel-handle"></div>
         <button class="panel-close" onclick="closePanel()" title="Fermer">
@@ -86,13 +85,26 @@
             <img id="panel-photo" class="panel-photo" src="" alt="Photo" style="display:none;" />
             <div class="panel-info">
                 <div class="panel-meta">
-                    <span id="panel-username"></span>
+                    <a id="panel-username-link" href="#" style="color:#2f855a; font-weight:bold; text-decoration:none;">
+                        <i class="fa-solid fa-user"></i> <span id="panel-username"></span>
+                    </a>
                     <span>•</span>
                     <span id="panel-date"></span>
                 </div>
-                <div id="panel-location" class="panel-location"></div>
-                <div id="panel-title" class="panel-title"></div>
+                
+                <div id="panel-location" class="panel-location" style="margin-top: 5px; color: #4a5568; font-weight: 600;"></div>
+                <div id="panel-title" class="panel-title" style="margin: 8px 0;"></div>
+                
+                <div class="panel-taxonomy" style="font-size: 0.85rem; color: #718096; margin-bottom: 15px; padding: 10px; background: #f0fff4; border-radius: 8px; border-left: 4px solid #48bb78;">
+                    <div style="margin-bottom: 4px;"><i class="fa-solid fa-dna"></i> <em>Nom sc. : <span id="panel-scientific">En attente (DB Nizar)</span></em></div>
+                    <div><i class="fa-solid fa-layer-group"></i> <em>Classe : <span id="panel-class">En attente (DB Nizar)</span></em></div>
+                </div>
+
                 <p id="panel-desc" class="panel-desc"></p>
+
+                <a id="panel-evolution-btn" href="#" style="display: block; text-align: center; margin-top: 20px; background: #c6f6d5; color: #22543d; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.2s;">
+                    <i class="fa-solid fa-chart-line"></i> Voir l'évolution dans le temps
+                </a>
             </div>
         </div>
     </div>
@@ -194,8 +206,13 @@
         
         function openPanel(post) {
             document.getElementById("panel-username").textContent = post.Username;
+            var profileUrl = "{{ url_for('main.user_profile', username='__USERNAME__') }}".replace('__USERNAME__', post.Username);
+            document.getElementById("panel-username-link").href = profileUrl;
+            //Lien vers le graphique (Nizar)
+            var evolutionUrl = "/evolution/" + encodeURIComponent(post.Titre);
+            document.getElementById("panel-evolution-btn").href = evolutionUrl;
             document.getElementById("panel-date").textContent = post.Date || "";
-            document.getElementById("panel-location").textContent = post.Localisation ? post.Localisation : "";
+            document.getElementById("panel-location").textContent = post.Localisation ? "📍 " + post.Localisation : "";
             document.getElementById("panel-title").textContent = post.Titre;
             document.getElementById("panel-desc").textContent = post.Description || "";
         
