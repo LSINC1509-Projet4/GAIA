@@ -121,3 +121,180 @@
     color: #2d3748;
     font-size: 0.92rem;
 }
+
+/* ── Ban badges ─────────────────────────────────── */
+.ban-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+.ban-permanent { background: #fed7d7; color: #c53030; }
+.ban-temporary { background: #fefcbf; color: #975a16; }
+
+/* ── Stat signalements (admin) ──────────────────── */
+.stat-reports .stat-number { color: #e53e3e; }
+.stat-reports .stat-label  { color: #e53e3e; }
+
+/* ── Bouton signaler utilisateur ────────────────── */
+.report-user-form { margin-left: auto; }
+.btn-report-user {
+    background: none;
+    border: 1px solid #e53e3e;
+    color: #e53e3e;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-report-user:hover { background: #fff5f5; }
+
+/* ── Bouton signaler post ───────────────────────── */
+.report-post-form { margin-top: 10px; }
+.btn-report-post {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+.btn-report-post:hover { color: #e53e3e; }
+
+/* ── Panel Admin ────────────────────────────────── */
+.admin-panel {
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+}
+.admin-panel-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #c53030;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+}
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+.admin-btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+}
+.admin-btn:hover { opacity: 0.85; }
+.btn-logs     { background: #ebf8ff; color: #2b6cb0; }
+.btn-ban      { background: #fed7d7; color: #c53030; }
+.btn-ban-temp { background: #fefcbf; color: #975a16; }
+.btn-unban    { background: #c6f6d5; color: #276749; }
+.btn-delete   { background: #c53030; color: #fff; }
+
+#temp-ban-form {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    flex-basis: 100%;
+}
+.date-input {
+    padding: 6px 10px;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+/* ── Modal Logs ─────────────────────────────────── */
+.logs-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 100;
+}
+.logs-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(600px, 92vw);
+    max-height: 75vh;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    z-index: 101;
+    flex-direction: column;
+    overflow: hidden;
+}
+.logs-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 700;
+    color: #1a202c;
+    font-size: 0.95rem;
+}
+.logs-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #718096;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.logs-close-btn:hover { background: #edf2f7; }
+.logs-content {
+    overflow-y: auto;
+    padding: 12px 20px;
+    flex: 1;
+}
+.logs-loading, .logs-empty {
+    text-align: center;
+    color: #a0aec0;
+    padding: 30px 0;
+    font-size: 0.9rem;
+}
+.log-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f7fafc;
+    font-size: 0.88rem;
+}
+.log-entry:last-child { border-bottom: none; }
+.log-type {
+    font-weight: 600;
+    color: #2d3748;
+    flex: 1;
+}
+.log-detail {
+    font-size: 0.8rem;
+    color: #718096;
+    background: #edf2f7;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+.log-date {
+    font-size: 0.78rem;
+    color: #a0aec0;
+    white-space: nowrap;
+}

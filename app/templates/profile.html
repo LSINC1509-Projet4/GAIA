@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     </head>
     <body>
+        {% set profile_id = profile_user.Id %}
         <div class="navbar">
             <div class="user-info-block">
                 <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
@@ -27,7 +28,14 @@
                     {{ profile_user.Username[0].upper() }}
                 </div>
                 <div class="profile-info">
-                    <h2>{{ profile_user.Username }}</h2>
+                    <h2>
+                        {{ profile_user.Username }}
+                        {% if profile_user.Ban_Status == 'permanent' %}
+                            <span class="ban-badge ban-permanent">Banni</span>
+                        {% elif profile_user.Ban_Status == 'temporary' %}
+                            <span class="ban-badge ban-temporary">Banni jusqu'au {{ profile_user.Ban_Until }}</span>
+                        {% endif %}
+                    </h2>
                     <span class="profile-role">{{ profile_user.Role }}</span>
                     <span class="profile-badge">{{ user_badge }} — Niveau {{ level }}</span>
                     <div class="xp-bar-container">
@@ -43,9 +51,70 @@
                             <div class="stat-number">{{ comments|length }}</div>
                             <div class="stat-label">Comments</div>
                         </div>
+                        {% if current_user.Role == 'Admin' and not is_own_profile %}
+                        <div class="stat stat-reports">
+                            <div class="stat-number">{{ report_count }}</div>
+                            <div class="stat-label">Signalements</div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
+
+                {% if not is_own_profile %}
+                <form action="{{ url_for('main.report_user', user_id=profile_id) }}" method="POST" class="report-user-form">
+                    <button type="submit" class="btn-report-user" title="Signaler cet utilisateur">
+                        <i class="fas fa-flag"></i> Signaler
+                    </button>
+                </form>
+                {% endif %}
             </div>
+            {% if current_user.Role == 'Admin' and not is_own_profile %}
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <i class="fas fa-shield-alt"></i> Modération — Admin
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn btn-logs"
+                            data-userid="{{ profile_id }}"
+                            data-username="{{ profile_user.Username }}"
+                            onclick="openLogs(this.dataset.userid, this.dataset.username)">
+                        <i class="fas fa-list-alt"></i> Voir les logs
+                    </button>
+                    <form action="{{ url_for('main.ban_user', user_id=profile_id) }}" method="POST" style="display:inline;">
+                        <input type="hidden" name="ban_type" value="permanent">
+                        <button type="submit" class="admin-btn btn-ban"
+                                data-username="{{ profile_user.Username }}"
+                                onclick="return confirm('Bannir définitivement ' + this.dataset.username + ' ?')">
+                            <i class="fas fa-ban"></i> Ban permanent
+                        </button>
+                    </form>
+
+                    <button class="admin-btn btn-ban-temp" onclick="toggleTempBan()">
+                        <i class="fas fa-clock"></i> Ban temporaire
+                    </button>
+                    <form id="temp-ban-form" action="{{ url_for('main.ban_user', user_id=profile_id) }}" method="POST"
+                          style="display:none; margin-top:8px;">
+                        <input type="hidden" name="ban_type" value="temporary">
+                        <input type="date" name="ban_until" class="date-input" required>
+                        <button type="submit" class="admin-btn btn-ban">Confirmer le ban</button>
+                    </form>
+                    {% if profile_user.Ban_Status %}
+                    <form action="{{ url_for('main.unban_user', user_id=profile_id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="admin-btn btn-unban">
+                            <i class="fas fa-unlock"></i> Lever le ban
+                        </button>
+                    </form>
+                    {% endif %}
+                    <form action="{{ url_for('main.delete_user', user_id=profile_id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="admin-btn btn-delete"
+                                data-username="{{ profile_user.Username }}"
+                                onclick="return confirm('Supprimer définitivement le compte de ' + this.dataset.username + ' ? Cette action est irréversible.')">
+                            <i class="fas fa-trash"></i> Supprimer le compte
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
 
             <div class="post-actions" style="margin-bottom: 20px;">
                 <button class="action-btn" onclick="showTab('posts')" id="tab-posts">Posts</button>
@@ -63,14 +132,19 @@
                         <img src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
                             alt="Post image" class="post-image-main" />
                         {% endif %}
+                        {% if not is_own_profile %}
+                        <form action="{{ url_for('main.report_post', post_id=post.Id) }}" method="POST" class="report-post-form">
+                            <button type="submit" class="btn-report-post">
+                                <i class="fas fa-flag"></i> Signaler ce post
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 {% else %}
                     <div class="post-card" style="text-align:center; color:#718096;">No post yet.</div>
                 {% endif %}
             </div>
-
-            <!-- Comments tab -->
             <div id="section-comments" style="display:none;">
                 {% if comments %}
                     {% for comment in comments %}
@@ -84,16 +158,73 @@
                 {% endif %}
             </div>
 
-            <script>
-                function showTab(tab) {
-                    document.getElementById('section-posts').style.display = tab === 'posts' ? 'block' : 'none';
-                    document.getElementById('section-comments').style.display = tab === 'comments' ? 'block' : 'none';
-                    document.getElementById('tab-posts').classList.toggle('liked', tab === 'posts');
-                    document.getElementById('tab-comments').classList.toggle('liked', tab === 'comments');
-                }
-                showTab('posts');
-            </script>
-
         </div>
+        {% if current_user.Role == 'Admin' %}
+        <div id="logs-overlay" class="logs-overlay" onclick="closeLogs()"></div>
+        <div id="logs-modal" class="logs-modal">
+            <div class="logs-modal-header">
+                <span>Logs — <strong id="logs-username"></strong></span>
+                <button class="logs-close-btn" onclick="closeLogs()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="logs-content" class="logs-content">
+                <div class="logs-loading">Chargement...</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <script>
+            function showTab(tab) {
+                document.getElementById('section-posts').style.display = tab === 'posts' ? 'block' : 'none';
+                document.getElementById('section-comments').style.display = tab === 'comments' ? 'block' : 'none';
+                document.getElementById('tab-posts').classList.toggle('liked', tab === 'posts');
+                document.getElementById('tab-comments').classList.toggle('liked', tab === 'comments');
+            }
+            showTab('posts');
+
+            function toggleTempBan() {
+                const form = document.getElementById('temp-ban-form');
+                form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+            }
+
+            const ACTION_LABELS = {
+                'POST_CREATED': 'A créé un post',
+                'POST_EDITED': 'A modifié un post',
+                'COMMENT_POSTED': 'A posté un commentaire',
+                'REPORTED_BY': 'A été signalé',
+                'REPORTED': 'A signalé un contenu',
+            };
+
+            function openLogs(userId, username) {
+                document.getElementById('logs-username').textContent = username;
+                document.getElementById('logs-content').innerHTML = '<div class="logs-loading">Chargement...</div>';
+                document.getElementById('logs-overlay').style.display = 'block';
+                document.getElementById('logs-modal').style.display = 'flex';
+
+                fetch('/admin/logs/' + userId)
+                    .then(r => r.json())
+                    .then(logs => {
+                        if (!logs.length) {
+                            document.getElementById('logs-content').innerHTML = '<div class="logs-empty">Aucune action enregistrée.</div>';
+                            return;
+                        }
+                        const html = logs.map(log => `
+                            <div class="log-entry">
+                                <span class="log-type">${ACTION_LABELS[log.Action_Type] || log.Action_Type}</span>
+                                ${log.Detail ? `<span class="log-detail">${log.Detail}</span>` : ''}
+                                <span class="log-date">${log.Created_At}</span>
+                            </div>
+                        `).join('');
+                        document.getElementById('logs-content').innerHTML = html;
+                    })
+                    .catch(() => {
+                        document.getElementById('logs-content').innerHTML = '<div class="logs-empty">Erreur lors du chargement.</div>';
+                    });
+            }
+
+            function closeLogs() {
+                document.getElementById('logs-overlay').style.display = 'none';
+                document.getElementById('logs-modal').style.display = 'none';
+            }
+        </script>
     </body>
 </html>
