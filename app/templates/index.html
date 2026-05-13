@@ -93,6 +93,9 @@
                 <a href="{{ url_for('main.carte') }}" class="btn btn-post">Map</a>
                 <a href="{{ url_for('main.publish') }}" class="btn btn-post">+</a>
                 <a href="{{ url_for('main.profile') }}" class="btn btn-post">My profile</a>
+                {% if current_user.Role == 'Admin' %}
+                <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post">🚩 Signalements</a>
+                {% endif %}
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
             </div>
         </div>
