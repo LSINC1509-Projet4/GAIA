@@ -16,8 +16,26 @@
                 <span class="user-greeting">Hey, {{ current_user.Username }}</span>
             </div>
             <div class="nav-links">
-                <a href="{{ url_for('main.index') }}" class="btn btn-post">Feed</a>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-post" title="Feed">
+                    <i class="fa-solid fa-newspaper"></i>
+                </a>
+                <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </a>
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post" title="Publier">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                <a href="{{ url_for('main.profile') }}" class="btn btn-post" title="Mon profil">
+                    <i class="fa-solid fa-user"></i>
+                </a>
+                {% if current_user.Role == 'Admin' %}
+                <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post btn-reports" title="Signalements">
+                    <i class="fa-solid fa-flag"></i>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout" title="Déconnexion">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
             </div>
         </div>
 
