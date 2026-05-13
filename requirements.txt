@@ -1,7 +1,11 @@
 flask
 flask-sqlalchemy
+flask-login
 PyMySQL
 gunicorn
 coverage
 pdoc3
 pyinaturalist
+pandas
+requests
+

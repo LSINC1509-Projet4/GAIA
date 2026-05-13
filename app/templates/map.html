@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GAIA - Carte</title>
+    <title>GAIA - Map</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='Logo.png') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -27,15 +27,46 @@
             <span class="user-greeting">{{ current_user.Username }}</span>
         </div>
         <div class="nav-links">
-            <a href="{{ url_for('main.index') }}" class="btn btn-feed">
-                <i class="fa-solid fa-newspaper"></i> Feed
+            <a href="{{ url_for('main.index') }}" class="btn btn-post" title="Feed">
+                <i class="fa-solid fa-newspaper"></i>
             </a>
-            <a href="{{ url_for('main.publish') }}" class="btn btn-post">
-                <i class="fa-solid fa-plus"></i> Publier
+            <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte">
+                <i class="fa-solid fa-map-location-dot"></i>
             </a>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
+            <a href="{{ url_for('main.publish') }}" class="btn btn-post" title="Publier">
+                <i class="fa-solid fa-plus"></i>
+            </a>
+            <a href="{{ url_for('main.profile') }}" class="btn btn-post" title="Mon profil">
+                <i class="fa-solid fa-user"></i>
+            </a>
+            {% if current_user.Role == 'Admin' %}
+            <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post btn-reports" title="Signalements">
+                <i class="fa-solid fa-flag"></i>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-logout" title="Déconnexion">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
         </div>
     </nav>
+    <!-- Panneau de filtres -->
+    <div class="map-filters">
+        <button class="btn-filter-toggle" onclick="toggleMapFilters()">
+            <i class="fa-solid fa-sliders"></i> Filtres
+        </button>
+        <div id="map-filter-panel" class="map-filter-panel hidden">
+            <input type="text" id="filter-search" placeholder="🔍 Espèce..." oninput="applyFilters()" onkeydown="if(event.key==='Enter') applyFilters()"/>
+            <select id="filter-location" onchange="applyFilters()">
+                <option value="">Toutes localisations</option>
+                {% for loc in locations_list %}
+                    <option value="{{ loc.Localisation }}">{{ loc.Localisation }}</option>
+                {% endfor %}
+            </select>
+            <label>Du <input type="date" id="filter-date-from" onchange="applyFilters()"/></label>
+            <label>Au <input type="date" id="filter-date-to" onchange="applyFilters()"/></label>
+            <button class="btn-reset-filters" onclick="resetFilters()">✕ Réinitialiser</button>
+        </div>
+    </div>
 
     <!-- Carte plein écran -->
     <div id="map-full"></div>
@@ -69,27 +100,28 @@
     <script>
         var posts = {{ posts | tojson }};
         var activeMarker = null;
-
+        var allMarkers = []; // on garde une référence à tous les markers
+        
         var map = L.map("map-full", { zoomControl: false }).setView([50.45, 4.5], 8);
-
+        
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; OpenStreetMap"
         }).addTo(map);
-
+        
         L.control.zoom({ position: "bottomleft" }).addTo(map);
-
+        
         var gaiaIcon = L.divIcon({
             className: "",
             html: '<div class="gaia-marker"><i class="fa-solid fa-leaf"></i></div>',
             iconSize: [40, 40],
             iconAnchor: [20, 20]
         });
-
+        
         posts.forEach(function(post) {
             if (post.Latitude == null || post.Longitude == null) return;
-
+        
             var marker = L.marker([post.Latitude, post.Longitude], { icon: gaiaIcon });
-
+        
             marker.on("click", function() {
                 if (activeMarker && activeMarker !== this) {
                     activeMarker.getElement().querySelector(".gaia-marker").classList.remove("active");
@@ -98,21 +130,75 @@
                 activeMarker = this;
                 openPanel(post);
             });
-
+        
             marker.addTo(map);
+            allMarkers.push({ marker: marker, post: post }); // on stocke marker + post ensemble
         });
-
+        
         map.on("click", function() {
             closePanel();
         });
-
+        
+        function applyFilters() {
+            var search = document.getElementById("filter-search").value.toLowerCase();
+            var location = document.getElementById("filter-location").value.toLowerCase();
+            var dateFrom = document.getElementById("filter-date-from").value;
+            var dateTo = document.getElementById("filter-date-to").value;
+        
+            var visible = 0;
+        
+            allMarkers.forEach(function(item) {
+                var post = item.post;
+                var marker = item.marker;
+        
+                var matchSearch = !search || post.Titre.toLowerCase().includes(search);
+                var matchLocation = !location || post.Localisation.toLowerCase() === location;
+                var matchDateFrom = !dateFrom || post.Date >= dateFrom;
+                var matchDateTo = !dateTo || post.Date <= dateTo;
+        
+                if (matchSearch && matchLocation && matchDateFrom && matchDateTo) {
+                    marker.addTo(map);
+                    visible++;
+                } else {
+                    map.removeLayer(marker);
+                }
+            });
+        
+            // Met à jour le compteur
+            document.querySelector(".map-counter").innerHTML = 
+                '<i class="fa-solid fa-leaf"></i> ' + visible + ' observation' + (visible > 1 ? 's' : '');
+            // Centrer sur la localisation sélectionnée
+            if (location) {
+                var found = allMarkers.find(function(item) {
+                    return item.post.Localisation === location;
+                });
+                if (found) {
+                    map.setView([found.post.Latitude, found.post.Longitude], 12);
+                }
+            } else {
+                map.setView([50.45, 4.5], 8); // vue par défaut Belgique
+            }
+        }
+        
+        function resetFilters() {
+            document.getElementById("filter-search").value = "";
+            document.getElementById("filter-location").value = "";
+            document.getElementById("filter-date-from").value = "";
+            document.getElementById("filter-date-to").value = "";
+            applyFilters();
+        }
+        
+        function toggleMapFilters() {
+            document.getElementById("map-filter-panel").classList.toggle("hidden");
+        }
+        
         function openPanel(post) {
             document.getElementById("panel-username").textContent = post.Username;
             document.getElementById("panel-date").textContent = post.Date || "";
-            document.getElementById("panel-location").textContent = post.Localisation ? "📍 " + post.Localisation : "";
+            document.getElementById("panel-location").textContent = post.Localisation ? post.Localisation : "";
             document.getElementById("panel-title").textContent = post.Titre;
             document.getElementById("panel-desc").textContent = post.Description || "";
-
+        
             var photo = document.getElementById("panel-photo");
             if (post.Photo) {
                 photo.src = "/static/uploads/" + post.Photo;
@@ -120,10 +206,10 @@
             } else {
                 photo.style.display = "none";
             }
-
+        
             document.getElementById("post-panel").classList.add("open");
         }
-
+        
         function closePanel() {
             document.getElementById("post-panel").classList.remove("open");
             if (activeMarker) {

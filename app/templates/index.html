@@ -32,32 +32,118 @@
                     class="nav-logo"
                 />
                 <span class="user-greeting"
-                    >Welcome, {{ current_user.Username }}</span
+                    >Hey, {{ current_user.Username }}</span
                 >
             </div>
-            <div class="nav-links">
-                <a href="{{ url_for('main.carte') }}" class="btn btn-post"
-                    >🗺️ Carte</a
+
+            <form method="GET" action="/" class="search-form">
+                <div class="search-input-wrapper">
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="🔍 Search species..."
+                        value="{{ search or '' }}"
+                    />
+                    {% if search or location or animal or date_from or date_to
+                    %}
+                    <a href="/" class="btn-clear" title="Réinitialiser">✕</a>
+                    {% endif %}
+                </div>
+                <button
+                    type="button"
+                    class="btn-filter"
+                    onclick="toggleFilters()"
                 >
-                <a href="{{ url_for('main.publish') }}" class="btn btn-post"
-                    >Publier</a
-                >
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+
+                <div id="filters-panel" class="filters-panel hidden">
+                    <div class="filter-group">
+                        <label>Localisation</label>
+                        <select name="location">
+                            <option value="">Toutes</option>
+                            {% for loc in locations_list %}
+                            <option value="{{ loc.Localisation }}" {% if loc.Localisation == location %}selected{% endif %}>
+                                {{ loc.Localisation }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Espèce</label>
+                        <select name="animal">
+                            <option value="">Tous</option>
+                            {% for a in animals_list %}
+                            <option value="{{ a.Titre }}" {% if a.Titre == animal %}selected{% endif%}>
+                                {{ a.Titre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Du</label>
+                        <input
+                            type="date"
+                            name="date_from"
+                            value="{{ date_from }}"
+                        />
+                    </div>
+                    <div class="filter-group">
+                        <label>Au</label>
+                        <input
+                            type="date"
+                            name="date_to"
+                            value="{{ date_to }}"
+                        />
+                    </div>
+                    <button type="submit" class="btn-apply">Appliquer</button>
+                </div>
+            </form>
+
+            <div class="nav-links-group">
                 <a
                     href="{{ url_for('main.validation_post') }}"
-                    class="btn btn-validation"
+                    class="nav-item btn-validation"
                     >Validation</a
                 >
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout"
-                    >Sign Out</a
-                >
+                <a
+                    href="{{ url_for('main.carte') }}"
+                    class="nav-item btn-post"
+                    title="Carte"
+                    ><i class="fa-solid fa-map-location-dot"></i
+                ></a>
+                <a
+                    href="{{ url_for('main.publish') }}"
+                    class="nav-item btn-post"
+                    title="Publier"
+                    ><i class="fa-solid fa-plus"></i
+                ></a>
+                <a
+                    href="{{ url_for('main.profile') }}"
+                    class="nav-item btn-post"
+                    title="Mon profil"
+                    ><i class="fa-solid fa-user"></i
+                ></a>
+                {% if current_user.Role == 'Admin' %}
+                <a
+                    href="{{ url_for('main.admin_reports') }}"
+                    class="nav-item btn-post"
+                    title="Signalements"
+                    ><i class="fa-solid fa-flag"></i
+                ></a>
+                {% endif %}
+                <a
+                    href="{{ url_for('auth.logout') }}"
+                    class="nav-item btn-logout"
+                    title="Déconnexion"
+                    ><i class="fa-solid fa-right-from-bracket"></i
+                ></a>
             </div>
         </div>
 
         <div class="feed-container">
             {% if posts %} {% for post in posts %}
             <div class="post-card">
-                {% if current_user.Username == post.Username or
-                current_user.Role == 'Admin' %}
                 <div class="post-options">
                     <button
                         class="btn-delete-post"
@@ -67,6 +153,7 @@
                         <i class="fa-solid fa-ellipsis"></i>
                     </button>
                     <div id="menu-{{ post.Id }}" class="post-dropdown hidden">
+                        {% if current_user.Username == post.Username %}
                         <a
                             href="{{ url_for('main.edit_post', post_id=post.Id) }}"
                             >✏️ Modifier</a
@@ -78,12 +165,38 @@
                         >
                             <button type="submit">🗑️ Supprimer</button>
                         </form>
+                        {% else %} {% if current_user.Role == 'Admin' %}
+                        <form
+                            method="post"
+                            action="{{ url_for('main.delete_post', post_id=post.Id) }}"
+                            onsubmit="return confirm('Supprimer ce post ?');"
+                        >
+                            <button type="submit">🗑️ Supprimer (Admin)</button>
+                        </form>
+                        {% endif %}
+                        <form
+                            method="post"
+                            action="{{ url_for('main.report_post', post_id=post.Id) }}"
+                            onsubmit="return confirm('Signaler ce post ?');"
+                        >
+                            <button type="submit">🚩 Signaler</button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
-                {% endif %}
+
                 <div class="post-meta">
-                    Posted by <strong>{{ post.Username }}</strong> • {{
-                    post.Date }} {% if post.Localisation %}
+                    Posted by
+                    <a
+                        href="{{ url_for('main.user_profile', username=post.Username) }}"
+                        class="username-link"
+                        ><strong>{{ post.Username }}</strong></a
+                    >
+                    <span class="badge-title"
+                        >{{ get_badge(post.CurrentLevel) }} (Niveau: {{
+                        post.CurrentLevel or 1 }})</span
+                    >
+                    • {{ post.Date }} {% if post.Localisation %}
                     <div class="location-tag">📍 {{ post.Localisation }}</div>
                     {% endif %}
                 </div>
@@ -107,19 +220,22 @@
                 ></div>
 
                 <div class="post-actions">
-                    <button
-                        class="action-btn like-btn"
-                        onclick="toggleLike(this)"
+                    <form
+                        action="{{ url_for('main.like_post', post_id=post.Id) }}"
+                        method="POST"
+                        style="display: inline"
                     >
-                        Like <span class="like-count">0</span>
-                    </button>
+                        <button type="submit" class="action-btn">
+                            💧 Arroser ({{ post.LikeCount }})
+                        </button>
+                    </form>
                     <button
-                        class="action-btn comment-btn"
+                        class="action-btn"
                         onclick="toggleCommentBox('comment-box-{{ post.Id }}')"
                     >
-                        Comment
+                        💬 Comment
                     </button>
-                    <button class="action-btn share-btn">Share</button>
+                    <button class="action-btn">🔗 Share</button>
                 </div>
 
                 <div class="comment-section">
@@ -140,6 +256,7 @@
                             ></textarea>
                         </form>
                     </div>
+
                     {% for comment in comments if comment['Post_Id'] == post.Id
                     and comment['Parent_Id'] is none %}
                     <div class="comment">
@@ -148,13 +265,13 @@
                             comment['Date'] }}
                         </div>
                         <p class="comment-text">{{ comment['Contenu'] }}</p>
-
                         <button
                             class="reply-toggle-btn"
                             onclick="toggleCommentBox('reply-box-{{ comment['Id'] }}')"
                         >
                             Reply
                         </button>
+
                         <div
                             id="reply-box-{{ comment['Id'] }}"
                             class="comment-box hidden"
@@ -170,12 +287,13 @@
                                 />
                                 <textarea
                                     name="Contenu"
-                                    placeholder="Répondre... (Enter pour envoyer)"
+                                    placeholder="Répondre..."
                                     required
                                     onkeydown="submitOnEnter(event, this)"
                                 ></textarea>
                             </form>
                         </div>
+
                         {% for reply in comments if reply['Parent_Id'] ==
                         comment['Id'] %}
                         <div class="comment reply">
@@ -198,37 +316,31 @@
         </div>
 
         <script>
+            // Leaflet Maps Init
             document.querySelectorAll(".post-map").forEach(function (el) {
                 var lat = parseFloat(el.getAttribute("data-lat"));
                 var lng = parseFloat(el.getAttribute("data-lng"));
-                var map = L.map(el.id, { scrollWheelZoom: false }).setView(
-                    [lat, lng],
-                    13,
-                );
-                L.tileLayer(
-                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    {
-                        attribution: "&copy; OpenStreetMap",
-                    },
-                ).addTo(map);
-                L.marker([lat, lng]).addTo(map);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    var map = L.map(el.id, { scrollWheelZoom: false }).setView(
+                        [lat, lng],
+                        13,
+                    );
+                    L.tileLayer(
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        {
+                            attribution: "&copy; OpenStreetMap",
+                        },
+                    ).addTo(map);
+                    L.marker([lat, lng]).addTo(map);
+                }
             });
-
-            function toggleLike(btn) {
-                const countSpan = btn.querySelector(".like-count");
-                const liked = btn.classList.toggle("liked");
-                countSpan.textContent = liked
-                    ? parseInt(countSpan.textContent) + 1
-                    : parseInt(countSpan.textContent) - 1;
-            }
 
             function toggleCommentBox(id) {
                 const box = document.getElementById(id);
                 if (box) {
                     box.classList.toggle("hidden");
-                    if (!box.classList.contains("hidden")) {
+                    if (!box.classList.contains("hidden"))
                         box.querySelector("textarea").focus();
-                    }
                 }
             }
 
@@ -244,6 +356,12 @@
                     if (m.id !== id) m.classList.add("hidden");
                 });
                 document.getElementById(id).classList.toggle("hidden");
+            }
+
+            function toggleFilters() {
+                document
+                    .getElementById("filters-panel")
+                    .classList.toggle("hidden");
             }
 
             document.addEventListener("click", function (e) {
