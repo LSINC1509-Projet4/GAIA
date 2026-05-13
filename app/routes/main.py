@@ -63,6 +63,9 @@ def index():
         query += " AND Date <= ?"
         params.append(date_to)
 
+    if current_user.Role != 'Admin':
+        query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
+
     if sort == "old":
         query += " ORDER BY Date ASC"
     elif sort == "az":
@@ -422,11 +425,14 @@ def edit_post(post_id):
 @login_required
 def carte():
     db = get_db()
-    posts = db.execute(
+    query = (
         "SELECT Id, Titre, Description, strftime('%Y-%m-%d', Date) as Date, "
         "Localisation, Latitude, Longitude, Username, Photo "
         "FROM Posts WHERE Latitude IS NOT NULL AND Longitude IS NOT NULL"
-    ).fetchall()
+    )
+    if current_user.Role != 'Admin':
+        query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
+    posts = db.execute(query).fetchall()
     locations_list = db.execute(
         "SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation"
     ).fetchall()
