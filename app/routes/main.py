@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+
 import requests
 from flask import (
     Blueprint,
@@ -15,16 +16,17 @@ from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from app.db import get_db
-from app.xp_logic import calculate_tot, calcul_levels
-from app.xp_logic import badge
+from app.xp_logic import badge, calcul_levels, calculate_tot
 
 main_bp = Blueprint("main", __name__)
 
 
 def log_action(db, user_id, action_type, target_id=None, target_type=None, detail=None):
     # ajoute une action dans UserLogs
-    db.execute("INSERT INTO UserLogs (User_Id, Action_Type, Target_Id, Target_Type, Detail) VALUES (?, ?, ?, ?, ?)",
-        (user_id, action_type, target_id, target_type, detail))
+    db.execute(
+        "INSERT INTO UserLogs (User_Id, Action_Type, Target_Id, Target_Type, Detail) VALUES (?, ?, ?, ?, ?)",
+        (user_id, action_type, target_id, target_type, detail),
+    )
 
 
 @main_bp.route("/")
@@ -69,7 +71,7 @@ def index():
         query += " AND Date <= ?"
         params.append(date_to)
 
-    if current_user.Role != 'Admin':
+    if current_user.Role != "Admin":
         query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
 
     query += " AND Posts.Id NOT IN (SELECT post_id FROM Report WHERE reporter_id = ? AND post_id IS NOT NULL)"
@@ -86,8 +88,12 @@ def index():
 
     posts = db.execute(query, params).fetchall()
     comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
-    locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
-    animals_list = db.execute("SELECT DISTINCT Titre FROM Posts ORDER BY Titre").fetchall()
+    locations_list = db.execute(
+        "SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation"
+    ).fetchall()
+    animals_list = db.execute(
+        "SELECT DISTINCT Titre FROM Posts ORDER BY Titre"
+    ).fetchall()
 
     return render_template(
         "index.html",
@@ -132,7 +138,7 @@ def register():
 
         db.execute(
             "INSERT INTO UserStats (UserId, NbrePostsAlltime, NBreLikesAlltime, TotalXP, CurrentLevel) VALUES (?, 0, 0, 0, 1)",
-            (new_user_id,)
+            (new_user_id,),
         )
 
         db.commit()
@@ -164,22 +170,31 @@ def publish():
         db = get_db()
         db.execute(
             "INSERT INTO Posts (titre, description, date, localisation, latitude, longitude, Photo, Username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (titre, description, date_post, localisation, latitude, longitude, filename, current_user.Username),
+            (
+                titre,
+                description,
+                date_post,
+                localisation,
+                latitude,
+                longitude,
+                filename,
+                current_user.Username,
+            ),
         )
         db.execute(
             "UPDATE UserStats SET NbrePostsAlltime = NbrePostsAlltime + 1 WHERE UserId = ?",
-            (current_user.id,)
+            (current_user.id,),
         )
         stats = db.execute(
             "SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?",
-            (current_user.id,)
+            (current_user.id,),
         ).fetchone()
         if stats:
             new_xp = calculate_tot(stats["NbrePostsAlltime"], stats["NBreLikesAlltime"])
             new_level = calcul_levels(new_xp)
             db.execute(
                 "UPDATE UserStats SET TotalXP = ?, CurrentLevel = ? WHERE UserId = ?",
-                (new_xp, new_level, current_user.id)
+                (new_xp, new_level, current_user.id),
             )
 
         post_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
@@ -197,12 +212,12 @@ def like_post(post_id):
     db = get_db()
     existing_like = db.execute(
         "SELECT * FROM Likes WHERE UserId = ? AND PostId = ?",
-        (current_user.id, post_id)
+        (current_user.id, post_id),
     ).fetchone()
 
     post = db.execute("SELECT Username FROM Posts WHERE Id = ?", (post_id,)).fetchone()
     if not post:
-        return redirect(url_for('main.index'))
+        return redirect(url_for("main.index"))
 
     author = db.execute(
         "SELECT Id FROM Users WHERE Username = ?", (post["Username"],)
@@ -212,47 +227,47 @@ def like_post(post_id):
     if existing_like:
         db.execute(
             "DELETE FROM Likes WHERE UserId = ? AND PostId = ?",
-            (current_user.id, post_id)
+            (current_user.id, post_id),
         )
         if author_id:
             db.execute(
                 "UPDATE UserStats SET NBreLikesAlltime = MAX(0, NBreLikesAlltime - 1) WHERE UserId = ?",
-                (author_id,)
+                (author_id,),
             )
         flash("Arrosage annulé.")
     else:
         db.execute(
             "INSERT INTO Likes (UserId, PostId) VALUES (?, ?)",
-            (current_user.id, post_id)
+            (current_user.id, post_id),
         )
         if author_id:
             db.execute(
                 "UPDATE UserStats SET NBreLikesAlltime = NBreLikesAlltime + 1 WHERE UserId = ?",
-                (author_id,)
+                (author_id,),
             )
         flash("Post arrosé !")
 
     if author_id:
         stats = db.execute(
             "SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?",
-            (author_id,)
+            (author_id,),
         ).fetchone()
         if stats:
             new_xp = calculate_tot(stats["NbrePostsAlltime"], stats["NBreLikesAlltime"])
             new_level = calcul_levels(new_xp)
             db.execute(
                 "UPDATE UserStats SET TotalXP = ?, CurrentLevel = ? WHERE UserId = ?",
-                (new_xp, new_level, author_id)
+                (new_xp, new_level, author_id),
             )
 
     db.commit()
-    return redirect(url_for('main.index'))
+    return redirect(url_for("main.index"))
 
 
 @main_bp.route("/admin/reports")
 @login_required
 def admin_reports():
-    if current_user.Role != 'Admin':
+    if current_user.Role != "Admin":
         flash("Accès réservé aux administrateurs.")
         return redirect(url_for("main.index"))
 
@@ -273,7 +288,7 @@ def admin_reports():
 @main_bp.route("/admin/reports/<int:post_id>/dismiss", methods=["POST"])
 @login_required
 def dismiss_reports(post_id):
-    if current_user.Role != 'Admin':
+    if current_user.Role != "Admin":
         flash("Accès réservé aux administrateurs.")
         return redirect(url_for("main.index"))
 
@@ -290,42 +305,77 @@ def profile():
     db = get_db()
     posts = db.execute(
         "SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC",
-        (current_user.Username,)
+        (current_user.Username,),
     ).fetchall()
     comments = db.execute(
         "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC",
-        (current_user.Username,)
+        (current_user.Username,),
     ).fetchall()
     stats = db.execute(
         "SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?",
-        (current_user.id,)
+        (current_user.id,),
     ).fetchone()
     xp = stats["TotalXp"] if stats else 0
     level = stats["CurrentLevel"] if stats else 1
     user_badge = badge(level)
     profile_user = {"Username": current_user.Username, "Role": current_user.Role}
-    return render_template("profile.html", posts=posts, comments=comments, profile_user=profile_user,report_count=0, is_own_profile=True,xp=xp, level=level, user_badge=user_badge)
+    return render_template(
+        "profile.html",
+        posts=posts,
+        comments=comments,
+        profile_user=profile_user,
+        report_count=0,
+        is_own_profile=True,
+        xp=xp,
+        level=level,
+        user_badge=user_badge,
+    )
+
+
 @main_bp.route("/profile/<username>")
 @login_required
 def user_profile(username):
     db = get_db()
-    user_row = db.execute("SELECT Id, Role, Ban_Status, Ban_Until FROM Users WHERE Username = ?", (username,)).fetchone()
-    posts = db.execute("SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC", (username,)).fetchall()
-    comments = db.execute("SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC", (username,)).fetchall()
+    user_row = db.execute(
+        "SELECT Id, Role, Ban_Status, Ban_Until FROM Users WHERE Username = ?",
+        (username,),
+    ).fetchone()
+    posts = db.execute(
+        "SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC", (username,)
+    ).fetchall()
+    comments = db.execute(
+        "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC", (username,)
+    ).fetchall()
     # compte le nb de signalements recus (compte + posts)
     report_count = db.execute(
         "SELECT COUNT(*) FROM REPORT WHERE Reported_User_Id = ? OR post_id IN (SELECT Id FROM Posts WHERE Username = ?)",
-        (user_row["Id"], username)).fetchone()[0]
-    stats = db.execute("SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?", (user_row["Id"],)).fetchone()
+        (user_row["Id"], username),
+    ).fetchone()[0]
+    stats = db.execute(
+        "SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?",
+        (user_row["Id"],),
+    ).fetchone()
     xp = stats["TotalXp"] if stats else 0
     level = stats["CurrentLevel"] if stats else 1
     user_badge = badge(level)
-    profile_user = {"Id": user_row["Id"], "Username": username, "Role": user_row["Role"],
-                    "Ban_Status": user_row["Ban_Status"], "Ban_Until": user_row["Ban_Until"]}
-    return render_template("profile.html", posts=posts, comments=comments,
-                           profile_user=profile_user, report_count=report_count,
-                           xp=xp, level=level, user_badge=user_badge,
-                           is_own_profile=(current_user.Username == username))
+    profile_user = {
+        "Id": user_row["Id"],
+        "Username": username,
+        "Role": user_row["Role"],
+        "Ban_Status": user_row["Ban_Status"],
+        "Ban_Until": user_row["Ban_Until"],
+    }
+    return render_template(
+        "profile.html",
+        posts=posts,
+        comments=comments,
+        profile_user=profile_user,
+        report_count=report_count,
+        xp=xp,
+        level=level,
+        user_badge=user_badge,
+        is_own_profile=(current_user.Username == username),
+    )
 
 
 @main_bp.route("/post/<int:post_id>/comment", methods=["POST"])
@@ -337,10 +387,18 @@ def add_comment(post_id):
     db = get_db()
     db.execute(
         "INSERT INTO Comments (Contenu, Date, Username, Post_Id, Parent_Id) VALUES (?, ?, ?, ?, ?)",
-        (contenu, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), current_user.Username, post_id, parent_id),
+        (
+            contenu,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            current_user.Username,
+            post_id,
+            parent_id,
+        ),
     )
     comment_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
-    log_action(db, current_user.id, "COMMENT_POSTED", comment_id, "comment", f"post:{post_id}")
+    log_action(
+        db, current_user.id, "COMMENT_POSTED", comment_id, "comment", f"post:{post_id}"
+    )
     db.commit()
     return redirect(url_for("main.index"))
 
@@ -358,10 +416,12 @@ def get_animals():
         data = response.json()
         results = []
         for item in data.get("results", []):
-            results.append({
-                "name": item.get("preferred_common_name") or item.get("name"),
-                "scientific": item.get("name"),
-            })
+            results.append(
+                {
+                    "name": item.get("preferred_common_name") or item.get("name"),
+                    "scientific": item.get("name"),
+                }
+            )
         return jsonify(results)
     except Exception as e:
         print(f"Error fetching from iNaturalist: {e}")
@@ -421,13 +481,15 @@ def carte():
         "Localisation, Latitude, Longitude, Username, Photo "
         "FROM Posts WHERE Latitude IS NOT NULL AND Longitude IS NOT NULL"
     )
-    if current_user.Role != 'Admin':
+    if current_user.Role != "Admin":
         query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
     posts = db.execute(query).fetchall()
     locations_list = db.execute(
         "SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation"
     ).fetchall()
-    return render_template("map.html", posts=[dict(row) for row in posts], locations_list=locations_list)
+    return render_template(
+        "map.html", posts=[dict(row) for row in posts], locations_list=locations_list
+    )
 
 
 @main_bp.route("/post/<int:post_id>/delete", methods=["POST"])
@@ -453,21 +515,64 @@ def delete_post(post_id):
     return redirect(url_for("main.index"))
 
 
+@main_bp.route("/curation", methods=["GET", "POST"])
+@login_required
+def validation_post():
+    if current_user.Role != "Biologiste":
+        flash("Accès non autorisée .")
+        return redirect(url_for("main.index"))
+    db = get_db()
+
+    if request.method == "POST":
+        post_id = request.form.get("post_id")
+        new_titre = request.form.get("Titre")
+
+        db.execute(
+            "UPDATE Posts SET Titre = ? , is_verified = 1 WHERE Id = ?",
+            (new_titre, post_id),
+        )
+        db.commit()
+        flash(f"Post #{post_id} bien vérifié")
+
+    query = """ SELECT Id , Titre , Description , strftime('%Y-%m-%d' , Date) as Date , Localisation , Photo , is_verified
+    FROM Posts WHERE is_verified = 0 ORDER BY Date DESC"""
+
+    unverified_posts = db.execute(query).fetchall()
+    return render_template("validation.html", posts=unverified_posts)
+
+
 @main_bp.route("/report/post/<int:post_id>", methods=["POST"])
 @login_required
 def report_post(post_id):
     db = get_db()
     # Quand on report on récupère les données de l'utilisateurs et du poste concerné
-    already = db.execute("SELECT id FROM REPORT WHERE reporter_id = ? AND post_id = ?",(current_user.id, post_id),).fetchone()
+    already = db.execute(
+        "SELECT id FROM REPORT WHERE reporter_id = ? AND post_id = ?",
+        (current_user.id, post_id),
+    ).fetchone()
     if not already:
         # S'il n'est pas deja dans la DB on l'ajoute dans REPORT
-        db.execute("INSERT INTO REPORT (reporter_id, post_id) VALUES (?, ?)",(current_user.id, post_id),)
-        post = db.execute("SELECT Username FROM Posts WHERE Id = ?", (post_id,)).fetchone()
+        db.execute(
+            "INSERT INTO REPORT (reporter_id, post_id) VALUES (?, ?)",
+            (current_user.id, post_id),
+        )
+        post = db.execute(
+            "SELECT Username FROM Posts WHERE Id = ?", (post_id,)
+        ).fetchone()
         if post:
-            author = db.execute("SELECT Id FROM Users WHERE Username = ?", (post["Username"],)).fetchone()
+            author = db.execute(
+                "SELECT Id FROM Users WHERE Username = ?", (post["Username"],)
+            ).fetchone()
             if author:
-                #Ajout dans les logs
-                log_action(db, author["Id"], "REPORTED_BY", current_user.id, "user", f"par {current_user.Username} (post #{post_id})")
+                # Ajout dans les logs
+                log_action(
+                    db,
+                    author["Id"],
+                    "REPORTED_BY",
+                    current_user.id,
+                    "user",
+                    f"par {current_user.Username} (post #{post_id})",
+                )
         log_action(db, current_user.id, "REPORTED", post_id, "post")
         db.commit()
     return redirect(request.referrer)
@@ -478,11 +583,24 @@ def report_post(post_id):
 def report_user(user_id):
     db = get_db()
     # on recupere les données du "reporter" et du reporté
-    already = db.execute("SELECT id FROM REPORT WHERE reporter_id = ? AND Reported_User_Id = ?",(current_user.id, user_id),).fetchone()
+    already = db.execute(
+        "SELECT id FROM REPORT WHERE reporter_id = ? AND Reported_User_Id = ?",
+        (current_user.id, user_id),
+    ).fetchone()
     if not already:
-        db.execute( "INSERT INTO REPORT (reporter_id, Reported_User_Id) VALUES (?, ?)",(current_user.id, user_id),)
+        db.execute(
+            "INSERT INTO REPORT (reporter_id, Reported_User_Id) VALUES (?, ?)",
+            (current_user.id, user_id),
+        )
         # Ajout dans les logs
-        log_action(db, user_id, "REPORTED_BY", current_user.id, "user", f"par {current_user.Username}")
+        log_action(
+            db,
+            user_id,
+            "REPORTED_BY",
+            current_user.id,
+            "user",
+            f"par {current_user.Username}",
+        )
         log_action(db, current_user.id, "REPORTED", user_id, "user")
         db.commit()
     return redirect(request.referrer)
@@ -491,15 +609,21 @@ def report_user(user_id):
 @main_bp.route("/admin/ban/<int:user_id>", methods=["POST"])
 @login_required
 def ban_user(user_id):
-    ban_type = request.form.get("ban_type","permanent")
+    ban_type = request.form.get("ban_type", "permanent")
     ban_until = request.form.get("ban_until")
     db = get_db()
     if ban_type == "temporary" and ban_until:
         # Ban temporaire // update de la colonne ban_status
-        db.execute("UPDATE Users SET Ban_Status = 'temporary', Ban_Until = ? WHERE Id = ?",(ban_until,user_id),)
+        db.execute(
+            "UPDATE Users SET Ban_Status = 'temporary', Ban_Until = ? WHERE Id = ?",
+            (ban_until, user_id),
+        )
     else:
         # Perma ban
-        db.execute("UPDATE Users SET Ban_Status = 'permanent', Ban_Until = NULL WHERE Id = ?",(user_id,),)
+        db.execute(
+            "UPDATE Users SET Ban_Status = 'permanent', Ban_Until = NULL WHERE Id = ?",
+            (user_id,),
+        )
     db.commit()
     return redirect(request.referrer)
 
@@ -508,8 +632,10 @@ def ban_user(user_id):
 @login_required
 def unban_user(user_id):
     db = get_db()
-    #on update le status utilisateur a NULL
-    db.execute("UPDATE Users SET Ban_Status = NULL, Ban_Until = NULL WHERE Id = ?",(user_id,))
+    # on update le status utilisateur a NULL
+    db.execute(
+        "UPDATE Users SET Ban_Status = NULL, Ban_Until = NULL WHERE Id = ?", (user_id,)
+    )
     db.commit()
     return redirect(request.referrer)
 
@@ -519,16 +645,19 @@ def unban_user(user_id):
 def delete_user(user_id):
     db = get_db()
     user = db.execute("SELECT Username FROM Users WHERE Id = ?", (user_id,)).fetchone()
-    if user: # on s'assure qu'il est dans la db
+    if user:  # on s'assure qu'il est dans la db
         username = user["Username"]
         # on l'enleve de toutes les tables /// pour niz, si on normalise on peut faire un DELETE CASCADE dans les tables
-        db.execute("DELETE FROM Comments WHERE Username = ?",(username,))
-        db.execute("DELETE FROM Likes WHERE UserId = ?",(user_id,))
-        db.execute("DELETE FROM REPORT WHERE reporter_id = ? OR Reported_User_Id = ?", (user_id, user_id))
-        db.execute("DELETE FROM UserLogs WHERE User_Id = ?",(user_id,))
-        db.execute("DELETE FROM UserStats WHERE UserId = ?",(user_id,))
-        db.execute("DELETE FROM Posts WHERE Username = ?",(username,))
-        db.execute("DELETE FROM Users WHERE Id = ?",(user_id,))
+        db.execute("DELETE FROM Comments WHERE Username = ?", (username,))
+        db.execute("DELETE FROM Likes WHERE UserId = ?", (user_id,))
+        db.execute(
+            "DELETE FROM REPORT WHERE reporter_id = ? OR Reported_User_Id = ?",
+            (user_id, user_id),
+        )
+        db.execute("DELETE FROM UserLogs WHERE User_Id = ?", (user_id,))
+        db.execute("DELETE FROM UserStats WHERE UserId = ?", (user_id,))
+        db.execute("DELETE FROM Posts WHERE Username = ?", (username,))
+        db.execute("DELETE FROM Users WHERE Id = ?", (user_id,))
         db.commit()
     return redirect(url_for("main.index"))
 
@@ -537,12 +666,15 @@ def delete_user(user_id):
 @login_required
 def user_logs(user_id):
     db = get_db()
-    logs = db.execute("SELECT * FROM UserLogs WHERE User_Id = ? ORDER BY Created_At DESC", (user_id,)).fetchall()
+    logs = db.execute(
+        "SELECT * FROM UserLogs WHERE User_Id = ? ORDER BY Created_At DESC", (user_id,)
+    ).fetchall()
     # on convertit en dict pour jsonify
     result = []
     for log in logs:
         result.append(dict(log))
     return jsonify(result)
+<<<<<<< HEAD
 
 @main_bp.route("/admin/users")
 @login_required
@@ -573,3 +705,5 @@ def admin_users():
     users = db.execute(query, params).fetchall()
     return render_template("admin_users.html", users=users, search=search,
                            role_filter=role_filter, status_filter=status_filter)
+=======
+>>>>>>> f60ef4d86740cda79d7aa7fafcdcbe362f327b5f

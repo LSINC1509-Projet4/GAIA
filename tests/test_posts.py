@@ -34,8 +34,8 @@ def seed_file_post():
         # 4. Insert into DB (Saving the STRING path, not the BLOB)
         try:
             db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? )""",
+                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
                 (
                     "MY PANDA",
                     "MY FAVORITE",
@@ -47,6 +47,7 @@ def seed_file_post():
                     10,
                     "TestUser",
                     filename,  # This is the string (e.g., 'test_discovery_1776288311.png')
+                    0,
                 ),
             )
             db.commit()
@@ -70,8 +71,8 @@ def seed_file_post():
 
         try:
             db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? )""",
+                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
                 (
                     "Renard roux",
                     "Aperçu dans la forêt tôt le matin",
@@ -83,6 +84,7 @@ def seed_file_post():
                     0,
                     "TestUser",
                     filename,
+                    0,
                 ),
             )
             db.commit()
@@ -106,8 +108,8 @@ def seed_file_post():
 
         try:
             db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? )""",
+                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
                 (
                     "Chouette hulotte",
                     "Entendue la nuit dans un vieux chêne",
@@ -119,6 +121,7 @@ def seed_file_post():
                     0,
                     "TestUser",
                     filename,
+                    0,
                 ),
             )
             db.commit()
@@ -142,8 +145,8 @@ def seed_file_post():
 
         try:
             db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? )""",
+                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ?)""",
                 (
                     "Écureuil roux",
                     "Grimpait à toute vitesse sur un pin",
@@ -155,6 +158,7 @@ def seed_file_post():
                     0,
                     "TestUser",
                     filename,
+                    0,
                 ),
             )
             db.commit()
@@ -178,8 +182,8 @@ def seed_file_post():
 
         try:
             db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? )""",
+                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
                 (
                     "Cerf élaphe",
                     "Troupeau observé au crépuscule",
@@ -191,6 +195,7 @@ def seed_file_post():
                     0,
                     "TestUser",
                     filename,
+                    0,
                 ),
             )
             db.commit()

@@ -10,7 +10,7 @@ body {
     align-items: center;
 }
 
-/* --- 2. NAVBAR --- */
+/* --- 2. NAVBAR (REVISED FINAL) --- */
 .navbar {
     background-color: rgba(255, 255, 255, 0.95);
     padding: 10px 20px;
@@ -23,17 +23,34 @@ body {
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
     margin-bottom: 30px;
     box-sizing: border-box;
+    flex-wrap: nowrap; /* CRITICAL: Forces everything to stay in one row */
 }
 
-.user-info-block {
+.nav-links-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    flex-shrink: 0; /* Prevents the buttons from shrinking too small */
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 10px; /* Tighter padding for a better fit */
+    border-radius: 10px;
+    text-decoration: none;
+    white-space: nowrap; /* Prevents text inside buttons from wrapping */
+    font-size: 0.85rem; /* Slightly smaller font to save space */
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .nav-logo {
-    height: 35px;
+    height: 50px; /* Adjusted based on your screenshot showing a larger logo */
     width: auto;
+    flex-shrink: 0;
 }
 
 .user-greeting {
@@ -288,6 +305,11 @@ body {
 .btn-reports:hover {
     background-color: #feebc8 !important;
 }
+.btn-validation {
+    background-color: #c6f6d5;
+    color: #22543d;
+    margin-right: 8px;
+}
 
 .flash-msg {
     background-color: #fff;
@@ -359,7 +381,6 @@ body {
     margin: 0;
 }
 
-
 .nav-links {
     display: flex;
     align-items: center;
@@ -368,7 +389,6 @@ body {
     white-space: nowrap;
     margin-left: auto;
 }
-
 
 .filters-panel {
     position: absolute;
@@ -424,7 +444,6 @@ body {
     border-color: #48bb78;
     color: #2f855a;
 }
-
 
 .search-form {
     position: relative;

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Validation des Observations - GAIA</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/validation.css') }}"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    </head>
+    <body>
+        <div class="tinder-container" id="tinder-stack">
+            {% for post in posts %}
+            <div
+                class="swipe-card"
+                data-id="{{ post.Id }}"
+                data-titre="{{ post.Titre }}"
+            >
+                <div class="status-stamp stamp-verify">VALIDER</div>
+                <div class="status-stamp stamp-edit">MODIFIER</div>
+
+                <img
+                    src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                    alt="Observation"
+                />
+                <h2 class="post-title">{{ post.Titre }}</h2>
+                <div class="post-meta">
+                    <span class="location-tag">📍 {{ post.Localisation }}</span>
+                </div>
+                <p style="color: #4a5568">{{ post.Description }}</p>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <h2>Bravo !</h2>
+                <p>Toutes les observations ont été vérifiées.</p>
+                <a href="{{ url_for('main.index') }}" style="color: #2f855a"
+                    >Retour à l'accueil</a
+                >
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="edit-overlay" class="edit-form-overlay">
+            <div class="edit-modal">
+                <h3>📝 Corriger l'espèce</h3>
+                <form id="edit-form" method="POST">
+                    <input type="hidden" id="edit-post-id" name="post_id" />
+                    <label for="edit-titre">Nouveau nom :</label>
+                    <input
+                        type="text"
+                        id="edit-titre"
+                        name="Titre"
+                        class="edit-input"
+                    />
+                    <button type="submit" class="btn-confirm">
+                        Enregistrer & Valider
+                    </button>
+                    <button
+                        type="button"
+                        onclick="closeEdit()"
+                        class="btn-cancel"
+                    >
+                        Annuler
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function initSwipe() {
+                const cards = document.querySelectorAll(".swipe-card");
+
+                cards.forEach((card, index) => {
+                    const hammer = new Hammer(card);
+                    const verifyStamp = card.querySelector(".stamp-verify");
+                    const editStamp = card.querySelector(".stamp-edit");
+
+                    // Movement during drag
+                    hammer.on("pan", (e) => {
+                        const xProgress = e.deltaX / 150;
+                        card.style.transform = `translate(calc(-50% + ${e.deltaX}px), calc(-50% + ${e.deltaY}px)) rotate(${e.deltaX / 20}deg)`;
+
+                        // Show stamps
+                        if (e.deltaX > 50) {
+                            verifyStamp.style.opacity = Math.min(xProgress, 1);
+                            editStamp.style.opacity = 0;
+                        } else if (e.deltaX < -50) {
+                            editStamp.style.opacity = Math.min(
+                                Math.abs(xProgress),
+                                1,
+                            );
+                            verifyStamp.style.opacity = 0;
+                        } else {
+                            verifyStamp.style.opacity = 0;
+                            editStamp.style.opacity = 0;
+                        }
+                    });
+
+                    // Action on release
+                    hammer.on("panend", (e) => {
+                        if (e.deltaX > 150) {
+                            // SWIPE RIGHT -> VALIDATE
+                            card.style.transform = `translate(1000px, ${e.deltaY}px) rotate(45deg)`;
+                            card.style.opacity = "0";
+                            validatePost(card.dataset.id, card.dataset.titre);
+                        } else if (e.deltaX < -150) {
+                            // SWIPE LEFT -> EDIT
+                            card.style.transform = `translate(-1000px, ${e.deltaY}px) rotate(-45deg)`;
+                            card.style.opacity = "0";
+                            openEdit(card.dataset.id, card.dataset.titre);
+                        } else {
+                            // CANCEL / RESET
+                            card.style.transform = "translate(-50%, -50%)";
+                            verifyStamp.style.opacity = 0;
+                            editStamp.style.opacity = 0;
+                        }
+                    });
+                });
+            }
+
+            async function validatePost(id, titre) {
+                const formData = new FormData();
+                formData.append("post_id", id);
+                formData.append("Titre", titre);
+
+                await fetch("{{ url_for('main.validation_post') }}", {
+                    method: "POST",
+                    body: formData,
+                });
+                //On retire la carte sans refresh la page
+                const card = document.querySelector(`.swipe-card[data-id="${id}"]`);
+                if (card) card.remove();
+            
+                //facultatif: si c'était la dernière carte, on peut refresh pour voir le message "Bravo"
+                if (document.querySelectorAll('.swipe-card').length === 0) {
+                    location.reload();
+    }
+                
+            }
+
+            function openEdit(id, titre) {
+                document.getElementById("edit-post-id").value = id;
+                document.getElementById("edit-titre").value = titre;
+                document.getElementById("edit-overlay").style.display = "flex";
+            }
+
+            function closeEdit() {
+                document.getElementById("edit-overlay").style.display = "none";
+            }
+
+            // Run on load
+            document.addEventListener("DOMContentLoaded", initSwipe);
+        </script>
+    </body>
+</html>

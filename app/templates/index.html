@@ -35,81 +35,118 @@
                     >Hey, {{ current_user.Username }}</span
                 >
             </div>
+
             <form method="GET" action="/" class="search-form">
                 <div class="search-input-wrapper">
-                    <input type="text" name="q" placeholder="🔍 Rechercher une espèce..." value="{{ search }}"/>
-                    {% if search or location or animal or date_from or date_to %}
-                        <a href="/" class="btn-clear" title="Réinitialiser">✕</a>
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="🔍 Search species..."
+                        value="{{ search or '' }}"
+                    />
+                    {% if search or location or animal or date_from or date_to
+                    %}
+                    <a href="/" class="btn-clear" title="Réinitialiser">✕</a>
                     {% endif %}
                 </div>
-                <button type="button" class="btn-filter" onclick="toggleFilters()">Filters</button>
-            
+                <button
+                    type="button"
+                    class="btn-filter"
+                    onclick="toggleFilters()"
+                >
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+
                 <div id="filters-panel" class="filters-panel hidden">
-                    <label>
-                        Localisation
+                    <div class="filter-group">
+                        <label>Localisation</label>
                         <select name="location">
                             <option value="">Toutes</option>
                             {% for loc in locations_list %}
-                                <option value="{{ loc.Localisation }}" {% if loc.Localisation == location %}selected{% endif %}>
-                                    {{ loc.Localisation }}
-                                </option>
+                            <option value="{{ loc.Localisation }}" {% if loc.Localisation == location %}selected{% endif %}>
+                                {{ loc.Localisation }}
+                            </option>
                             {% endfor %}
                         </select>
-                    </label>
-                    <label>
-                        Espèce observée
+                    </div>
+                    <div class="filter-group">
+                        <label>Espèce</label>
                         <select name="animal">
                             <option value="">Tous</option>
                             {% for a in animals_list %}
-                                <option value="{{ a.Titre }}" {% if a.Titre == animal %}selected{% endif %}>
-                                    {{ a.Titre }}
-                                </option>
+                            <option value="{{ a.Titre }}" {% if a.Titre == animal %}selected{% endif%}>
+                                {{ a.Titre }}
+                            </option>
                             {% endfor %}
                         </select>
-                    </label>
-                    
-                    <label>
-                        Du
-                        <input type="date" name="date_from" value="{{ date_from }}"/>
-                    </label>
-                    
-                    <label>
-                        Au
-                        <input type="date" name="date_to" value="{{ date_to }}"/>
-                    </label>
-                    <label>
-                        Trier par
-                        <select name="sort">
-                            <option value="recent" {% if sort == "recent" %}selected{% endif %}>Plus récent</option>
-                            <option value="old" {% if sort == "old" %}selected{% endif %}>Plus ancien</option>
-                            <option value="az" {% if sort == "az" %}selected{% endif %}>A → Z</option>
-                            <option value="za" {% if sort == "za" %}selected{% endif %}>Z → A</option>
-                        </select>
-                    </label>
+                    </div>
+                    <div class="filter-group">
+                        <label>Du</label>
+                        <input
+                            type="date"
+                            name="date_from"
+                            value="{{ date_from }}"
+                        />
+                    </div>
+                    <div class="filter-group">
+                        <label>Au</label>
+                        <input
+                            type="date"
+                            name="date_to"
+                            value="{{ date_to }}"
+                        />
+                    </div>
                     <button type="submit" class="btn-apply">Appliquer</button>
                 </div>
             </form>
-            <div class="nav-links">
-                <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte">
-                    <i class="fa-solid fa-map-location-dot"></i>
-                </a>
-                <a href="{{ url_for('main.publish') }}" class="btn btn-post" title="Publier">
-                    <i class="fa-solid fa-plus"></i>
-                </a>
-                <a href="{{ url_for('main.profile') }}" class="btn btn-post" title="Mon profil">
-                    <i class="fa-solid fa-user"></i>
-                </a>
+
+            <div class="nav-links-group">
+                <a
+                    href="{{ url_for('main.validation_post') }}"
+                    class="nav-item btn-validation"
+                    >Validation</a
+                >
+                <a
+                    href="{{ url_for('main.carte') }}"
+                    class="nav-item btn-post"
+                    title="Carte"
+                    ><i class="fa-solid fa-map-location-dot"></i
+                ></a>
+                <a
+                    href="{{ url_for('main.publish') }}"
+                    class="nav-item btn-post"
+                    title="Publier"
+                    ><i class="fa-solid fa-plus"></i
+                ></a>
+                <a
+                    href="{{ url_for('main.profile') }}"
+                    class="nav-item btn-post"
+                    title="Mon profil"
+                    ><i class="fa-solid fa-user"></i
+                ></a>
                 {% if current_user.Role == 'Admin' %}
+<<<<<<< HEAD
                 <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post btn-reports" title="Signalements">
                     <i class="fa-solid fa-flag"></i>
                 </a>
                 <a href="{{ url_for('main.admin_users') }}" class="btn btn-post" title="Utilisateurs">
                     <i class="fa-solid fa-users"></i>
                 </a>
+=======
+                <a
+                    href="{{ url_for('main.admin_reports') }}"
+                    class="nav-item btn-post"
+                    title="Signalements"
+                    ><i class="fa-solid fa-flag"></i
+                ></a>
+>>>>>>> f60ef4d86740cda79d7aa7fafcdcbe362f327b5f
                 {% endif %}
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout" title="Déconnexion">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </a>
+                <a
+                    href="{{ url_for('auth.logout') }}"
+                    class="nav-item btn-logout"
+                    title="Déconnexion"
+                    ><i class="fa-solid fa-right-from-bracket"></i
+                ></a>
             </div>
         </div>
 
@@ -125,13 +162,33 @@
                         <i class="fa-solid fa-ellipsis"></i>
                     </button>
                     <div id="menu-{{ post.Id }}" class="post-dropdown hidden">
+<<<<<<< HEAD
                         {% if current_user.Username == post.Username or current_user.Role == 'Admin' %}
                         <a href="{{ url_for('main.edit_post', post_id=post.Id) }}">Modifier</a>
                         <form
                             method="post"
                             action="{{ url_for('main.delete_post', post_id=post.Id) }}"
+=======
+                        {% if current_user.Username == post.Username %}
+                        <a
+                            href="{{ url_for('main.edit_post', post_id=post.Id) }}"
+                            >✏️ Modifier</a
                         >
-                            <button type="submit">Supprimer</button>
+                        <form
+                            method="post"
+                            action="{{ url_for('main.delete_post', post_id=post.Id) }}"
+                            onsubmit="return confirm('Supprimer ce post ?');"
+                        >
+                            <button type="submit">🗑️ Supprimer</button>
+                        </form>
+                        {% else %} {% if current_user.Role == 'Admin' %}
+                        <form
+                            method="post"
+                            action="{{ url_for('main.delete_post', post_id=post.Id) }}"
+                            onsubmit="return confirm('Supprimer ce post ?');"
+>>>>>>> f60ef4d86740cda79d7aa7fafcdcbe362f327b5f
+                        >
+                            <button type="submit">🗑️ Supprimer (Admin)</button>
                         </form>
                         {% endif %}
                         {% if current_user.Username != post.Username %}
@@ -144,11 +201,18 @@
                         {% endif %}
                     </div>
                 </div>
+
                 <div class="post-meta">
-                    Posted by <a href="{{ url_for('main.user_profile', username=post.Username) }}" class="username-link"><strong>{{ post.Username }}</strong></a>
-                    <span class="badge-title">
-                        {{ get_badge(post.CurrentLevel) }} (Niveau: {{
-                        post.CurrentLevel or 1 }})</span>
+                    Posted by
+                    <a
+                        href="{{ url_for('main.user_profile', username=post.Username) }}"
+                        class="username-link"
+                        ><strong>{{ post.Username }}</strong></a
+                    >
+                    <span class="badge-title"
+                        >{{ get_badge(post.CurrentLevel) }} (Niveau: {{
+                        post.CurrentLevel or 1 }})</span
+                    >
                     • {{ post.Date }} {% if post.Localisation %}
                     <div class="location-tag">📍 {{ post.Localisation }}</div>
                     {% endif %}
@@ -164,15 +228,6 @@
                     class="post-image-main"
                 />
                 {% endif %}
-                <form
-                    action="{{ url_for('main.like_post', post_id=post.Id) }}"
-                    method="POST"
-                    style="display: inline"
-                >
-                    <button type="submit" class="btn-water">
-                        Arroser ({{ post.LikeCount }})
-                    </button>
-                </form>
 
                 <div
                     id="map-{{ post.Id }}"
@@ -182,19 +237,22 @@
                 ></div>
 
                 <div class="post-actions">
-                    <button
-                        class="action-btn like-btn"
-                        onclick="toggleLike(this)"
+                    <form
+                        action="{{ url_for('main.like_post', post_id=post.Id) }}"
+                        method="POST"
+                        style="display: inline"
                     >
-                        Like <span class="like-count">0</span>
-                    </button>
+                        <button type="submit" class="action-btn">
+                            💧 Arroser ({{ post.LikeCount }})
+                        </button>
+                    </form>
                     <button
-                        class="action-btn comment-btn"
+                        class="action-btn"
                         onclick="toggleCommentBox('comment-box-{{ post.Id }}')"
                     >
-                        Comment
+                        💬 Comment
                     </button>
-                    <button class="action-btn share-btn">Share</button>
+                    <button class="action-btn">🔗 Share</button>
                 </div>
 
                 <div class="comment-section">
@@ -215,6 +273,7 @@
                             ></textarea>
                         </form>
                     </div>
+
                     {% for comment in comments if comment['Post_Id'] == post.Id
                     and comment['Parent_Id'] is none %}
                     <div class="comment">
@@ -223,13 +282,13 @@
                             comment['Date'] }}
                         </div>
                         <p class="comment-text">{{ comment['Contenu'] }}</p>
-
                         <button
                             class="reply-toggle-btn"
                             onclick="toggleCommentBox('reply-box-{{ comment['Id'] }}')"
                         >
                             Reply
                         </button>
+
                         <div
                             id="reply-box-{{ comment['Id'] }}"
                             class="comment-box hidden"
@@ -245,12 +304,13 @@
                                 />
                                 <textarea
                                     name="Contenu"
-                                    placeholder="Répondre... (Enter pour envoyer)"
+                                    placeholder="Répondre..."
                                     required
                                     onkeydown="submitOnEnter(event, this)"
                                 ></textarea>
                             </form>
                         </div>
+
                         {% for reply in comments if reply['Parent_Id'] ==
                         comment['Id'] %}
                         <div class="comment reply">
@@ -273,37 +333,31 @@
         </div>
 
         <script>
+            // Leaflet Maps Init
             document.querySelectorAll(".post-map").forEach(function (el) {
                 var lat = parseFloat(el.getAttribute("data-lat"));
                 var lng = parseFloat(el.getAttribute("data-lng"));
-                var map = L.map(el.id, { scrollWheelZoom: false }).setView(
-                    [lat, lng],
-                    13,
-                );
-                L.tileLayer(
-                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    {
-                        attribution: "&copy; OpenStreetMap",
-                    },
-                ).addTo(map);
-                L.marker([lat, lng]).addTo(map);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    var map = L.map(el.id, { scrollWheelZoom: false }).setView(
+                        [lat, lng],
+                        13,
+                    );
+                    L.tileLayer(
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        {
+                            attribution: "&copy; OpenStreetMap",
+                        },
+                    ).addTo(map);
+                    L.marker([lat, lng]).addTo(map);
+                }
             });
-
-            function toggleLike(btn) {
-                const countSpan = btn.querySelector(".like-count");
-                const liked = btn.classList.toggle("liked");
-                countSpan.textContent = liked
-                    ? parseInt(countSpan.textContent) + 1
-                    : parseInt(countSpan.textContent) - 1;
-            }
 
             function toggleCommentBox(id) {
                 const box = document.getElementById(id);
                 if (box) {
                     box.classList.toggle("hidden");
-                    if (!box.classList.contains("hidden")) {
+                    if (!box.classList.contains("hidden"))
                         box.querySelector("textarea").focus();
-                    }
                 }
             }
 
@@ -320,9 +374,11 @@
                 });
                 document.getElementById(id).classList.toggle("hidden");
             }
-            
+
             function toggleFilters() {
-                document.getElementById('filters-panel').classList.toggle('hidden');
+                document
+                    .getElementById("filters-panel")
+                    .classList.toggle("hidden");
             }
 
             document.addEventListener("click", function (e) {
