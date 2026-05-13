@@ -40,6 +40,37 @@
     font-weight: 600;
 }
 
+.profile-badge {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #2f855a;
+    font-weight: 600;
+}
+
+.xp-bar-container {
+    width: 100%;
+    background: #e2e8f0;
+    border-radius: 10px;
+    height: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.xp-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #48bb78, #2f855a);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+.xp-label {
+    font-size: 11px;
+    color: #718096;
+    margin-top: 3px;
+    margin-bottom: 4px;
+}
+
 .profile-stats {
     display: flex;
     gap: 20px;

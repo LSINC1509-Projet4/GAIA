@@ -29,6 +29,11 @@
                 <div class="profile-info">
                     <h2>{{ profile_user.Username }}</h2>
                     <span class="profile-role">{{ profile_user.Role }}</span>
+                    <span class="profile-badge">{{ user_badge }} — Niveau {{ level }}</span>
+                    <div class="xp-bar-container">
+                        <div class="xp-bar" style="width: {{ [xp % 100, 100] | min }}%"></div>
+                    </div>
+                    <div class="xp-label">{{ xp | int }} XP</div>
                     <div class="profile-stats">
                         <div class="stat">
                             <div class="stat-number">{{ posts|length }}</div>
