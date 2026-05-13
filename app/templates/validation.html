@@ -129,8 +129,15 @@
                     method: "POST",
                     body: formData,
                 });
-                // Optionally remove card from DOM instead of reload
-                location.reload();
+                //On retire la carte sans refresh la page
+                const card = document.querySelector(`.swipe-card[data-id="${id}"]`);
+                if (card) card.remove();
+            
+                //facultatif: si c'était la dernière carte, on peut refresh pour voir le message "Bravo"
+                if (document.querySelectorAll('.swipe-card').length === 0) {
+                    location.reload();
+    }
+                
             }
 
             function openEdit(id, titre) {
@@ -141,8 +148,6 @@
 
             function closeEdit() {
                 document.getElementById("edit-overlay").style.display = "none";
-                // Reset cards if modification is cancelled
-                location.reload();
             }
 
             // Run on load
