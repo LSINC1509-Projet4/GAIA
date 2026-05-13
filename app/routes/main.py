@@ -235,6 +235,32 @@ def like_post(post_id):
     return redirect(url_for('main.index'))
 
 
+@main_bp.route("/post/<int:post_id>/report", methods=["POST"])
+@login_required
+def report_post(post_id):
+    db = get_db()
+    post = db.execute("SELECT Id FROM Posts WHERE Id = ?", (post_id,)).fetchone()
+    if not post:
+        flash("Post introuvable.")
+        return redirect(url_for("main.index"))
+
+    already = db.execute(
+        "SELECT id FROM Report WHERE reporter_id = ? AND post_id = ?",
+        (current_user.id, post_id)
+    ).fetchone()
+    if already:
+        flash("Tu as déjà signalé ce post.")
+        return redirect(url_for("main.index"))
+
+    db.execute(
+        "INSERT INTO Report (reporter_id, post_id) VALUES (?, ?)",
+        (current_user.id, post_id)
+    )
+    db.commit()
+    flash("Post signalé. Merci de contribuer à la communauté.")
+    return redirect(url_for("main.index"))
+
+
 @main_bp.route("/profile")
 @login_required
 def profile():
