@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS Posts (
     Longitude REAL NOT NULL,
     Badges INTEGER ,
     Username TEXT NOT NULL,
-    Photo TEXT NOT NULL
+    Photo TEXT NOT NULL,
+    is_verified INTEGER DEFAULT 0
 );
 
 -- Table des Niveaux Utilisateurs
@@ -112,6 +113,7 @@ class Post:
         Badges,
         Username,
         Photo,
+        is_verified,
     ):
         self.id = Id
         self.Titre = Titre
@@ -122,6 +124,7 @@ class Post:
         self.Badges = Badges
         self.Username = Username
         self.Photo = Photo
+        self.is_verified = is_verified
 
 
 def init_db(db):
