@@ -20,7 +20,6 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Navbar flottante -->
     <nav class="navbar">
         <div class="user-info-block">
             <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA" class="nav-logo" />
@@ -30,7 +29,7 @@
             <a href="{{ url_for('main.index') }}" class="btn btn-post" title="Feed">
                 <i class="fa-solid fa-newspaper"></i>
             </a>
-            <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte">
+            <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte" style="background-color: #c6f6d5; border-color: #9ae6b4;">
                 <i class="fa-solid fa-map-location-dot"></i>
             </a>
             <a href="{{ url_for('main.publish') }}" class="btn btn-post" title="Publier">
@@ -49,7 +48,7 @@
             </a>
         </div>
     </nav>
-    <!-- Panneau de filtres -->
+    
     <div class="map-filters">
         <button class="btn-filter-toggle" onclick="toggleMapFilters()">
             <i class="fa-solid fa-sliders"></i> Filtres
@@ -64,19 +63,27 @@
             </select>
             <label>Du <input type="date" id="filter-date-from" onchange="applyFilters()"/></label>
             <label>Au <input type="date" id="filter-date-to" onchange="applyFilters()"/></label>
+            
+            <label style="flex-direction: row; align-items: center; gap: 8px; cursor: pointer; margin: 5px 0;">
+                <input type="checkbox" id="filter-recent-only" onchange="applyFilters()">
+                Récentes (< 30j)
+            </label>
+            
             <button class="btn-reset-filters" onclick="resetFilters()">✕ Réinitialiser</button>
         </div>
     </div>
 
-    <!-- Carte plein écran -->
+    <div class="map-legend">
+        <span><span class="legend-dot recent"></span> Récente (< 30j)</span>
+        <span><span class="legend-dot historical"></span> Ancienne</span>
+    </div>
+
     <div id="map-full"></div>
 
-    <!-- Badge compteur -->
     <div class="map-counter">
         <i class="fa-solid fa-leaf"></i> {{ posts|length }} observation{{ 's' if posts|length > 1 else '' }}
     </div>
 
-    <!-- Panneau bas (bottom sheet) -->
     <div id="post-panel" class="post-panel">
         <div class="panel-handle"></div>
         <button class="panel-close" onclick="closePanel()" title="Fermer">
@@ -100,7 +107,7 @@
     <script>
         var posts = {{ posts | tojson }};
         var activeMarker = null;
-        var allMarkers = []; // on garde une référence à tous les markers
+        var allMarkers = []; 
         
         var map = L.map("map-full", { zoomControl: false }).setView([50.45, 4.5], 8);
         
@@ -109,16 +116,29 @@
         }).addTo(map);
         
         L.control.zoom({ position: "bottomleft" }).addTo(map);
-        
-        var gaiaIcon = L.divIcon({
-            className: "",
-            html: '<div class="gaia-marker"><i class="fa-solid fa-leaf"></i></div>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
-        });
+
+        //Vérifie si la date a moins de 30 jours
+        function isRecent(dateString) {
+            if (!dateString) return false;
+            var postDate = new Date(dateString);
+            var today = new Date();
+            var diffTime = Math.abs(today - postDate);
+            var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            return diffDays <= 30;
+        }
         
         posts.forEach(function(post) {
             if (post.Latitude == null || post.Longitude == null) return;
+        
+            // Choix de la couleur en fonction de la date
+            var markerClass = isRecent(post.Date) ? "marker-recent" : "marker-historical";
+            
+            var gaiaIcon = L.divIcon({
+                className: "",
+                html: '<div class="gaia-marker ' + markerClass + '"><i class="fa-solid fa-leaf"></i></div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
         
             var marker = L.marker([post.Latitude, post.Longitude], { icon: gaiaIcon });
         
@@ -132,7 +152,7 @@
             });
         
             marker.addTo(map);
-            allMarkers.push({ marker: marker, post: post }); // on stocke marker + post ensemble
+            allMarkers.push({ marker: marker, post: post });
         });
         
         map.on("click", function() {
@@ -144,6 +164,7 @@
             var location = document.getElementById("filter-location").value.toLowerCase();
             var dateFrom = document.getElementById("filter-date-from").value;
             var dateTo = document.getElementById("filter-date-to").value;
+            var recentOnly = document.getElementById("filter-recent-only").checked; 
         
             var visible = 0;
         
@@ -152,11 +173,12 @@
                 var marker = item.marker;
         
                 var matchSearch = !search || post.Titre.toLowerCase().includes(search);
-                var matchLocation = !location || post.Localisation.toLowerCase() === location;
+                var matchLocation = !location || (post.Localisation && post.Localisation.toLowerCase() === location);
                 var matchDateFrom = !dateFrom || post.Date >= dateFrom;
                 var matchDateTo = !dateTo || post.Date <= dateTo;
+                var matchRecent = !recentOnly || isRecent(post.Date); 
         
-                if (matchSearch && matchLocation && matchDateFrom && matchDateTo) {
+                if (matchSearch && matchLocation && matchDateFrom && matchDateTo && matchRecent) {
                     marker.addTo(map);
                     visible++;
                 } else {
@@ -164,19 +186,18 @@
                 }
             });
         
-            // Met à jour le compteur
             document.querySelector(".map-counter").innerHTML = 
                 '<i class="fa-solid fa-leaf"></i> ' + visible + ' observation' + (visible > 1 ? 's' : '');
-            // Centrer sur la localisation sélectionnée
+            
             if (location) {
                 var found = allMarkers.find(function(item) {
-                    return item.post.Localisation === location;
+                    return item.post.Localisation && item.post.Localisation.toLowerCase() === location;
                 });
                 if (found) {
                     map.setView([found.post.Latitude, found.post.Longitude], 12);
                 }
             } else {
-                map.setView([50.45, 4.5], 8); // vue par défaut Belgique
+                map.setView([50.45, 4.5], 8); 
             }
         }
         
@@ -185,6 +206,7 @@
             document.getElementById("filter-location").value = "";
             document.getElementById("filter-date-from").value = "";
             document.getElementById("filter-date-to").value = "";
+            document.getElementById("filter-recent-only").checked = false;
             applyFilters();
         }
         

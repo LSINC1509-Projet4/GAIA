@@ -97,7 +97,6 @@ html, body {
 
 /* --- MARQUEURS CUSTOM --- */
 .gaia-marker {
-    background: linear-gradient(135deg, #48bb78, #2f855a);
     border: 3px solid white;
     border-radius: 50%;
     width: 40px;
@@ -107,16 +106,62 @@ html, body {
     justify-content: center;
     color: white;
     font-size: 17px;
-    box-shadow: 0 3px 12px rgba(47, 133, 90, 0.45);
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Couleur verte pour les récents */
+.marker-recent {
+    background: linear-gradient(135deg, #48bb78, #2f855a);
+    box-shadow: 0 3px 12px rgba(47, 133, 90, 0.45);
+}
+
+/* Couleur marron pour l'historique (> 30 jours) */
+.marker-historical {
+    background: linear-gradient(135deg, #a0826d, #7a6353);
+    box-shadow: 0 3px 12px rgba(160, 130, 109, 0.45);
 }
 
 .gaia-marker.active,
 .gaia-marker:hover {
     transform: scale(1.2);
+}
+
+.marker-recent.active, .marker-recent:hover {
     box-shadow: 0 5px 18px rgba(47, 133, 90, 0.6);
 }
+
+.marker-historical.active, .marker-historical:hover {
+    box-shadow: 0 5px 18px rgba(160, 130, 109, 0.6);
+}
+
+/* --- LÉGENDE DE LA CARTE --- */
+.map-legend {
+    position: fixed;
+    bottom: 24px;
+    left: 20px;
+    z-index: 999;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a5568;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 15px;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.legend-dot.recent { background: #48bb78; }
+.legend-dot.historical { background: #a0826d; }
 
 /* --- PANNEAU BAS (bottom sheet) --- */
 .post-panel {

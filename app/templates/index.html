@@ -101,40 +101,51 @@
             </form>
 
             <div class="nav-links-group">
+                {% if current_user.Role == 'Biologiste' %}
                 <a
                     href="{{ url_for('main.validation_post') }}"
-                    class="nav-item btn-validation"
+                    class="btn btn-validation"
                     >Validation</a
                 >
+                {% endif %}
+
+                <a 
+                    href="{{ url_for('main.tableau') }}" 
+                    class="btn btn-post" 
+                    title="Vue Tableau"
+                    ><i class="fa-solid fa-table"></i
+                ></a>
                 <a
                     href="{{ url_for('main.carte') }}"
-                    class="nav-item btn-post"
+                    class="btn btn-post"
                     title="Carte"
                     ><i class="fa-solid fa-map-location-dot"></i
                 ></a>
                 <a
                     href="{{ url_for('main.publish') }}"
-                    class="nav-item btn-post"
+                    class="btn btn-post"
                     title="Publier"
                     ><i class="fa-solid fa-plus"></i
                 ></a>
                 <a
                     href="{{ url_for('main.profile') }}"
-                    class="nav-item btn-post"
+                    class="btn btn-post"
                     title="Mon profil"
                     ><i class="fa-solid fa-user"></i
                 ></a>
+                
                 {% if current_user.Role == 'Admin' %}
                 <a
                     href="{{ url_for('main.admin_reports') }}"
-                    class="nav-item btn-post"
+                    class="btn btn-post btn-reports"
                     title="Signalements"
                     ><i class="fa-solid fa-flag"></i
                 ></a>
                 {% endif %}
+                
                 <a
                     href="{{ url_for('auth.logout') }}"
-                    class="nav-item btn-logout"
+                    class="btn btn-logout"
                     title="Déconnexion"
                     ><i class="fa-solid fa-right-from-bracket"></i
                 ></a>
