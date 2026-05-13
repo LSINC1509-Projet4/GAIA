@@ -674,3 +674,56 @@ def user_logs(user_id):
     for log in logs:
         result.append(dict(log))
     return jsonify(result)
+
+@main_bp.route("/tableau")
+@login_required
+def tableau():
+    db = get_db()
+    
+    #pagination et ses paramêtres
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    offset = (page - 1) * per_page
+    
+    #et trier
+    sort_by = request.args.get('sort_by', 'Date')
+    order = request.args.get('order', 'DESC').upper()
+
+    #dico de validation
+    valid_columns = {
+        'Date': 'Date', 
+        'Espece': 'Titre', 
+        'Lieu': 'Localisation'
+    }
+    
+    if sort_by not in valid_columns:
+        sort_by = 'Date'
+    if order not in ['ASC', 'DESC']:
+        order = 'DESC'
+    order_column = valid_columns[sort_by]
+
+    #Request de tri et pagination
+    #Note: Hey Nizar, si tu as déjà créé la table Especes, on pourra ajouter un LEFT JOIN ici plus tard pour la 'Classe'
+    query = f"""
+        SELECT Id, Titre as Espece, strftime('%Y-%m-%d', Date) as Date, 
+               Localisation, Username, Photo 
+        FROM Posts 
+        ORDER BY {order_column} {order}
+        LIMIT ? OFFSET ?
+    """
+    posts = db.execute(query, (per_page, offset)).fetchall()
+
+    #count total pour le nbr de pages
+    total_posts = db.execute("SELECT COUNT(*) FROM Posts").fetchone()[0]
+    total_pages = (total_posts + per_page - 1) // per_page
+    next_order = 'ASC' if order == 'DESC' else 'DESC'
+
+    return render_template(
+        "tableau.html",
+        posts=posts,
+        page=page,
+        total_pages=total_pages,
+        sort_by=sort_by,
+        order=order,
+        next_order=next_order
+    )
