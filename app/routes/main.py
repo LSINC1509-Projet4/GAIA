@@ -247,8 +247,15 @@ def profile():
         "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC",
         (current_user.Username,)
     ).fetchall()
+    stats = db.execute(
+        "SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?",
+        (current_user.id,)
+    ).fetchone()
+    xp = stats["TotalXp"] if stats else 0
+    level = stats["CurrentLevel"] if stats else 1
+    user_badge = badge(level)
     profile_user = {"Username": current_user.Username, "Role": current_user.Role}
-    return render_template("profile.html", posts=posts, comments=comments, profile_user=profile_user)
+    return render_template("profile.html", posts=posts, comments=comments, profile_user=profile_user, xp=xp, level=level, user_badge=user_badge)
 
 @main_bp.route("/profile/<username>")
 @login_required
