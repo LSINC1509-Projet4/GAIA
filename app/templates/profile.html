@@ -23,7 +23,6 @@
 
         <div class="feed-container">
 
-            <!-- En-tête profil -->
             <div class="profile-header">
                 <div class="profile-avatar">
                     {{ profile_user.Username[0].upper() }}
@@ -61,7 +60,6 @@
                     </div>
                 </div>
 
-                <!-- Bouton signaler l'utilisateur (tout le monde sauf soi-même) -->
                 {% if not is_own_profile %}
                 <form action="{{ url_for('main.report_user', user_id=profile_id) }}" method="POST" class="report-user-form">
                     <button type="submit" class="btn-report-user" title="Signaler cet utilisateur">
@@ -70,23 +68,18 @@
                 </form>
                 {% endif %}
             </div>
-
-            <!-- Panel Admin (visible seulement par les admins sur le profil d'un autre) -->
             {% if current_user.Role == 'Admin' and not is_own_profile %}
             <div class="admin-panel">
                 <div class="admin-panel-title">
                     <i class="fas fa-shield-alt"></i> Modération — Admin
                 </div>
                 <div class="admin-actions">
-                    <!-- Logs -->
                     <button class="admin-btn btn-logs"
                             data-userid="{{ profile_id }}"
                             data-username="{{ profile_user.Username }}"
                             onclick="openLogs(this.dataset.userid, this.dataset.username)">
                         <i class="fas fa-list-alt"></i> Voir les logs
                     </button>
-
-                    <!-- Ban permanent -->
                     <form action="{{ url_for('main.ban_user', user_id=profile_id) }}" method="POST" style="display:inline;">
                         <input type="hidden" name="ban_type" value="permanent">
                         <button type="submit" class="admin-btn btn-ban"
@@ -96,7 +89,6 @@
                         </button>
                     </form>
 
-                    <!-- Ban temporaire -->
                     <button class="admin-btn btn-ban-temp" onclick="toggleTempBan()">
                         <i class="fas fa-clock"></i> Ban temporaire
                     </button>
@@ -106,8 +98,6 @@
                         <input type="date" name="ban_until" class="date-input" required>
                         <button type="submit" class="admin-btn btn-ban">Confirmer le ban</button>
                     </form>
-
-                    <!-- Lever le ban -->
                     {% if profile_user.Ban_Status %}
                     <form action="{{ url_for('main.unban_user', user_id=profile_id) }}" method="POST" style="display:inline;">
                         <button type="submit" class="admin-btn btn-unban">
@@ -115,8 +105,6 @@
                         </button>
                     </form>
                     {% endif %}
-
-                    <!-- Suppression du compte -->
                     <form action="{{ url_for('main.delete_user', user_id=profile_id) }}" method="POST" style="display:inline;">
                         <button type="submit" class="admin-btn btn-delete"
                                 data-username="{{ profile_user.Username }}"
@@ -128,13 +116,11 @@
             </div>
             {% endif %}
 
-            <!-- Onglets -->
             <div class="post-actions" style="margin-bottom: 20px;">
                 <button class="action-btn" onclick="showTab('posts')" id="tab-posts">Posts</button>
                 <button class="action-btn" onclick="showTab('comments')" id="tab-comments">Comments</button>
             </div>
 
-            <!-- Posts -->
             <div id="section-posts">
                 {% if posts %}
                     {% for post in posts %}
@@ -159,8 +145,6 @@
                     <div class="post-card" style="text-align:center; color:#718096;">No post yet.</div>
                 {% endif %}
             </div>
-
-            <!-- Comments -->
             <div id="section-comments" style="display:none;">
                 {% if comments %}
                     {% for comment in comments %}
@@ -175,8 +159,6 @@
             </div>
 
         </div>
-
-        <!-- Modal Logs (admin seulement) -->
         {% if current_user.Role == 'Admin' %}
         <div id="logs-overlay" class="logs-overlay" onclick="closeLogs()"></div>
         <div id="logs-modal" class="logs-modal">
