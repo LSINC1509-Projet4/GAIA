@@ -72,6 +72,9 @@ def index():
     if current_user.Role != 'Admin':
         query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
 
+    query += " AND Posts.Id NOT IN (SELECT post_id FROM Report WHERE reporter_id = ? AND post_id IS NOT NULL)"
+    params.append(current_user.id)
+
     if sort == "old":
         query += " ORDER BY Date ASC"
     elif sort == "az":
@@ -244,32 +247,6 @@ def like_post(post_id):
 
     db.commit()
     return redirect(url_for('main.index'))
-
-
-@main_bp.route("/post/<int:post_id>/report", methods=["POST"])
-@login_required
-def report_post(post_id):
-    db = get_db()
-    post = db.execute("SELECT Id FROM Posts WHERE Id = ?", (post_id,)).fetchone()
-    if not post:
-        flash("Post introuvable.")
-        return redirect(url_for("main.index"))
-
-    already = db.execute(
-        "SELECT id FROM Report WHERE reporter_id = ? AND post_id = ?",
-        (current_user.id, post_id)
-    ).fetchone()
-    if already:
-        flash("Tu as déjà signalé ce post.")
-        return redirect(url_for("main.index"))
-
-    db.execute(
-        "INSERT INTO Report (reporter_id, post_id) VALUES (?, ?)",
-        (current_user.id, post_id)
-    )
-    db.commit()
-    flash("Post signalé. Merci de contribuer à la communauté.")
-    return redirect(url_for("main.index"))
 
 
 @main_bp.route("/admin/reports")
