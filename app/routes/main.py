@@ -269,9 +269,6 @@ def profile():
 def user_profile(username):
     db = get_db()
     user_row = db.execute("SELECT Id, Role, Ban_Status, Ban_Until FROM Users WHERE Username = ?", (username,)).fetchone()
-    if not user_row:
-        flash("Utilisateur introuvable.")
-        return redirect(url_for("main.index"))
     posts = db.execute("SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC", (username,)).fetchall()
     comments = db.execute("SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC", (username,)).fetchall()
     # compte le nb de signalements recus (compte + posts)
