@@ -69,6 +69,9 @@ def index():
         query += " AND Date <= ?"
         params.append(date_to)
 
+    if current_user.Role != 'Admin':
+        query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
+
     if sort == "old":
         query += " ORDER BY Date ASC"
     elif sort == "az":
@@ -243,6 +246,67 @@ def like_post(post_id):
     return redirect(url_for('main.index'))
 
 
+@main_bp.route("/post/<int:post_id>/report", methods=["POST"])
+@login_required
+def report_post(post_id):
+    db = get_db()
+    post = db.execute("SELECT Id FROM Posts WHERE Id = ?", (post_id,)).fetchone()
+    if not post:
+        flash("Post introuvable.")
+        return redirect(url_for("main.index"))
+
+    already = db.execute(
+        "SELECT id FROM Report WHERE reporter_id = ? AND post_id = ?",
+        (current_user.id, post_id)
+    ).fetchone()
+    if already:
+        flash("Tu as déjà signalé ce post.")
+        return redirect(url_for("main.index"))
+
+    db.execute(
+        "INSERT INTO Report (reporter_id, post_id) VALUES (?, ?)",
+        (current_user.id, post_id)
+    )
+    db.commit()
+    flash("Post signalé. Merci de contribuer à la communauté.")
+    return redirect(url_for("main.index"))
+
+
+@main_bp.route("/admin/reports")
+@login_required
+def admin_reports():
+    if current_user.Role != 'Admin':
+        flash("Accès réservé aux administrateurs.")
+        return redirect(url_for("main.index"))
+
+    db = get_db()
+    reported = db.execute("""
+        SELECT p.Id, p.Titre, p.Username, p.Photo, p.Localisation,
+               strftime('%Y-%m-%d', p.Date) as Date,
+               COUNT(r.id) as nb_reports
+        FROM Posts p
+        JOIN Report r ON r.post_id = p.Id
+        GROUP BY p.Id
+        ORDER BY nb_reports DESC
+    """).fetchall()
+
+    return render_template("admin_reports.html", reported=reported)
+
+
+@main_bp.route("/admin/reports/<int:post_id>/dismiss", methods=["POST"])
+@login_required
+def dismiss_reports(post_id):
+    if current_user.Role != 'Admin':
+        flash("Accès réservé aux administrateurs.")
+        return redirect(url_for("main.index"))
+
+    db = get_db()
+    db.execute("DELETE FROM Report WHERE post_id = ?", (post_id,))
+    db.commit()
+    flash("Signalements ignorés.")
+    return redirect(url_for("main.admin_reports"))
+
+
 @main_bp.route("/profile")
 @login_required
 def profile():
@@ -375,11 +439,14 @@ def edit_post(post_id):
 @login_required
 def carte():
     db = get_db()
-    posts = db.execute(
+    query = (
         "SELECT Id, Titre, Description, strftime('%Y-%m-%d', Date) as Date, "
         "Localisation, Latitude, Longitude, Username, Photo "
         "FROM Posts WHERE Latitude IS NOT NULL AND Longitude IS NOT NULL"
-    ).fetchall()
+    )
+    if current_user.Role != 'Admin':
+        query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
+    posts = db.execute(query).fetchall()
     locations_list = db.execute(
         "SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation"
     ).fetchall()
