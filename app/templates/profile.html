@@ -16,8 +16,26 @@
                 <span class="user-greeting">Hey, {{ current_user.Username }}</span>
             </div>
             <div class="nav-links">
-                <a href="{{ url_for('main.index') }}" class="btn btn-post">Feed</a>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Sign Out</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-post" title="Feed">
+                    <i class="fa-solid fa-newspaper"></i>
+                </a>
+                <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </a>
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post" title="Publier">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                <a href="{{ url_for('main.profile') }}" class="btn btn-post" title="Mon profil">
+                    <i class="fa-solid fa-user"></i>
+                </a>
+                {% if current_user.Role == 'Admin' %}
+                <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post btn-reports" title="Signalements">
+                    <i class="fa-solid fa-flag"></i>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout" title="Déconnexion">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
             </div>
         </div>
 
@@ -186,13 +204,52 @@
                 form.style.display = form.style.display === 'none' ? 'flex' : 'none';
             }
 
-            const ACTION_LABELS = {
-                'POST_CREATED': 'A créé un post',
-                'POST_EDITED': 'A modifié un post',
-                'COMMENT_POSTED': 'A posté un commentaire',
-                'REPORTED_BY': 'A été signalé',
-                'REPORTED': 'A signalé un contenu',
+            const ACTION_CONFIG = {
+                'POST_CREATED':    { label: 'A créé un post',         icon: '📝', cls: 'log-post'        },
+                'POST_EDITED':     { label: 'A modifié un post',      icon: '✏️', cls: 'log-edit'        },
+                'COMMENT_POSTED':  { label: 'A posté un commentaire', icon: '💬', cls: 'log-comment'     },
+                'REPORTED_BY':     { label: 'A été signalé',          icon: '🚩', cls: 'log-reported-by' },
+                'REPORTED':        { label: 'A signalé un contenu',   icon: '⚠️', cls: 'log-reported'    },
             };
+
+            function formatLogDate(dateStr) {
+                const d = new Date(dateStr);
+                if (isNaN(d)) return dateStr;
+                const now = new Date();
+                const diffMs = now - d;
+                const diffDays = Math.floor(diffMs / 86400000);
+                const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+                if (diffDays === 0) return "Aujourd'hui · " + time;
+                if (diffDays === 1) return "Hier · " + time;
+                if (diffDays < 7) return "Il y a " + diffDays + " jours";
+                return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+
+            function groupByDate(logs) {
+                const groups = { "Aujourd'hui": [], "Hier": [], "Cette semaine": [], "Plus ancien": [] };
+                const now = new Date();
+                logs.forEach(log => {
+                    const d = new Date(log.Created_At);
+                    const diffDays = Math.floor((now - d) / 86400000);
+                    if (diffDays === 0) groups["Aujourd'hui"].push(log);
+                    else if (diffDays === 1) groups["Hier"].push(log);
+                    else if (diffDays < 7) groups["Cette semaine"].push(log);
+                    else groups["Plus ancien"].push(log);
+                });
+                return groups;
+            }
+
+            function buildStats(logs) {
+                const counts = {};
+                logs.forEach(log => { counts[log.Action_Type] = (counts[log.Action_Type] || 0) + 1; });
+                const order = ['REPORTED_BY', 'REPORTED', 'POST_CREATED', 'POST_EDITED', 'COMMENT_POSTED'];
+                const labels = { REPORTED_BY: 'reçus', REPORTED: 'faits', POST_CREATED: 'posts', POST_EDITED: 'édits', COMMENT_POSTED: 'comm.' };
+                return order
+                    .filter(t => counts[t])
+                    .map(t => `<div class="logs-stat ${ACTION_CONFIG[t].cls}"><span>${ACTION_CONFIG[t].icon}</span> ${counts[t]} ${labels[t]}</div>`)
+                    .join('');
+            }
 
             function openLogs(userId, username) {
                 document.getElementById('logs-username').textContent = username;
@@ -207,14 +264,30 @@
                             document.getElementById('logs-content').innerHTML = '<div class="logs-empty">Aucune action enregistrée.</div>';
                             return;
                         }
-                        const html = logs.map(log => `
-                            <div class="log-entry">
-                                <span class="log-type">${ACTION_LABELS[log.Action_Type] || log.Action_Type}</span>
-                                ${log.Detail ? `<span class="log-detail">${log.Detail}</span>` : ''}
-                                <span class="log-date">${log.Created_At}</span>
-                            </div>
-                        `).join('');
-                        document.getElementById('logs-content').innerHTML = html;
+
+                        const statsHtml = `<div class="logs-stats">${buildStats(logs)}</div>`;
+
+                        const groups = groupByDate(logs);
+                        let groupsHtml = '';
+                        Object.keys(groups).forEach(name => {
+                            if (!groups[name].length) return;
+                            groupsHtml += `<div class="logs-group-title">${name}</div>`;
+                            groupsHtml += groups[name].map(log => {
+                                const cfg = ACTION_CONFIG[log.Action_Type] || { label: log.Action_Type, icon: '•', cls: '' };
+                                return `
+                                    <div class="log-entry ${cfg.cls}">
+                                        <span class="log-icon">${cfg.icon}</span>
+                                        <div class="log-body">
+                                            <div class="log-title">${cfg.label}</div>
+                                            ${log.Detail ? `<div class="log-detail">${log.Detail}</div>` : ''}
+                                        </div>
+                                        <span class="log-date">${formatLogDate(log.Created_At)}</span>
+                                    </div>
+                                `;
+                            }).join('');
+                        });
+
+                        document.getElementById('logs-content').innerHTML = statsHtml + groupsHtml;
                     })
                     .catch(() => {
                         document.getElementById('logs-content').innerHTML = '<div class="logs-empty">Erreur lors du chargement.</div>';

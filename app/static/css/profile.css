@@ -272,29 +272,92 @@
     padding: 30px 0;
     font-size: 0.9rem;
 }
+.logs-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 0 8px 0;
+    border-bottom: 1px solid #edf2f7;
+    margin-bottom: 8px;
+}
+.logs-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: #edf2f7;
+    color: #2d3748;
+}
+.logs-stat.log-reported-by { background: #fed7d7; color: #9b2c2c; }
+.logs-stat.log-reported    { background: #feebc8; color: #9c4221; }
+.logs-stat.log-post        { background: #c6f6d5; color: #22543d; }
+.logs-stat.log-edit        { background: #fefcbf; color: #744210; }
+.logs-stat.log-comment     { background: #bee3f8; color: #2c5282; }
+
+.logs-group-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #a0aec0;
+    margin: 14px 0 6px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
 .log-entry {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid #f7fafc;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: #f7fafc;
+    border-left: 4px solid #cbd5e0;
     font-size: 0.88rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.log-entry:last-child { border-bottom: none; }
-.log-type {
+.log-entry:hover {
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.log-entry.log-reported-by { border-left-color: #e53e3e; background: #fff5f5; }
+.log-entry.log-reported    { border-left-color: #dd6b20; background: #fffaf0; }
+.log-entry.log-post        { border-left-color: #38a169; background: #f0fff4; }
+.log-entry.log-edit        { border-left-color: #d69e2e; background: #fffff0; }
+.log-entry.log-comment     { border-left-color: #3182ce; background: #ebf8ff; }
+
+.log-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+}
+.log-body {
+    flex: 1;
+    min-width: 0;
+}
+.log-title {
     font-weight: 600;
     color: #2d3748;
-    flex: 1;
+    font-size: 0.88rem;
 }
 .log-detail {
-    font-size: 0.8rem;
+    font-size: 0.76rem;
     color: #718096;
-    background: #edf2f7;
-    padding: 2px 8px;
-    border-radius: 10px;
+    margin-top: 2px;
 }
 .log-date {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     color: #a0aec0;
     white-space: nowrap;
+    flex-shrink: 0;
 }

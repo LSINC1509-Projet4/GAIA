@@ -12,15 +12,15 @@ body {
 
 /* --- 2. NAVBAR --- */
 .navbar {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 10px 25px;
-    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 10px 20px;
+    border-radius: 16px;
     width: 100%;
-    max-width: 900px;
+    max-width: 1100px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    gap: 20px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
     margin-bottom: 30px;
     box-sizing: border-box;
 }
@@ -249,14 +249,44 @@ body {
 }
 
 .btn-logout {
-    background-color: #fed7d7;
+    background-color: transparent;
     color: #9b2c2c;
+    border: 1.5px solid #fed7d7;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.btn-logout:hover {
+    background-color: #fed7d7;
 }
 
 .btn-post {
+    background-color: transparent;
+    color: #2f855a;
+    border: 1.5px solid #c6f6d5;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-post:hover {
     background-color: #c6f6d5;
-    color: #22543d;
-    margin-right: 8px;
+    border-color: #9ae6b4;
+}
+.btn-post.btn-icon-only {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+.btn-reports {
+    color: #c05621 !important;
+    border-color: #feebc8 !important;
+}
+.btn-reports:hover {
+    background-color: #feebc8 !important;
 }
 
 .flash-msg {
@@ -323,17 +353,20 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex: 1;
-    margin: 0 20px;
+    flex: 1 1 320px;
+    min-width: 180px;
+    max-width: 600px;
+    margin: 0;
 }
 
 
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 0;
     white-space: nowrap;
+    margin-left: auto;
 }
 
 
