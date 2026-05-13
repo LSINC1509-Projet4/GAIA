@@ -103,6 +103,9 @@
                 <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post btn-reports" title="Signalements">
                     <i class="fa-solid fa-flag"></i>
                 </a>
+                <a href="{{ url_for('main.admin_users') }}" class="btn btn-post" title="Utilisateurs">
+                    <i class="fa-solid fa-users"></i>
+                </a>
                 {% endif %}
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-logout" title="Déconnexion">
                     <i class="fa-solid fa-right-from-bracket"></i>
@@ -122,31 +125,21 @@
                         <i class="fa-solid fa-ellipsis"></i>
                     </button>
                     <div id="menu-{{ post.Id }}" class="post-dropdown hidden">
-                        {% if current_user.Username == post.Username %}
+                        {% if current_user.Username == post.Username or current_user.Role == 'Admin' %}
                         <a href="{{ url_for('main.edit_post', post_id=post.Id) }}">Modifier</a>
                         <form
                             method="post"
                             action="{{ url_for('main.delete_post', post_id=post.Id) }}"
-                            onsubmit="return confirm('Supprimer ce post ?');"
-                        >
-                            <button type="submit">Supprimer</button>
-                        </form>
-                        {% else %}
-                        {% if current_user.Role == 'Admin' %}
-                        <form
-                            method="post"
-                            action="{{ url_for('main.delete_post', post_id=post.Id) }}"
-                            onsubmit="return confirm('Supprimer ce post ?');"
                         >
                             <button type="submit">Supprimer</button>
                         </form>
                         {% endif %}
+                        {% if current_user.Username != post.Username %}
                         <form
                             method="post"
                             action="{{ url_for('main.report_post', post_id=post.Id) }}"
-                            onsubmit="return confirm('Signaler ce post ?');"
                         >
-                            <button type="submit">🚩 Signaler</button>
+                            <button type="submit"> Signaler</button>
                         </form>
                         {% endif %}
                     </div>

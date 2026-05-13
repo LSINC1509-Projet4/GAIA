@@ -543,3 +543,33 @@ def user_logs(user_id):
     for log in logs:
         result.append(dict(log))
     return jsonify(result)
+
+@main_bp.route("/admin/users")
+@login_required
+def admin_users():
+    if current_user.Role != "Admin":
+        return redirect(url_for("main.index"))
+    db = get_db()
+    search = request.args.get("q", "").strip()
+    role_filter = request.args.get("role", "").strip()
+    status_filter = request.args.get("status", "").strip()
+
+    query = "SELECT Id, Username, Role, Ban_Status, Ban_Until FROM Users WHERE 1=1"
+    params = []
+    if search:
+        query += " AND Username LIKE ?"
+        params.append(f"%{search}%")
+    if role_filter:
+        query += " AND Role = ?"
+        params.append(role_filter)
+    if status_filter == "actif":
+        query += " AND Ban_Status IS NULL"
+    elif status_filter == "permanent":
+        query += " AND Ban_Status = 'permanent'"
+    elif status_filter == "temporary":
+        query += " AND Ban_Status = 'temporary'"
+    query += " ORDER BY Username ASC"
+
+    users = db.execute(query, params).fetchall()
+    return render_template("admin_users.html", users=users, search=search,
+                           role_filter=role_filter, status_filter=status_filter)
