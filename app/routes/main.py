@@ -674,7 +674,7 @@ def user_logs(user_id):
     for log in logs:
         result.append(dict(log))
     return jsonify(result)
-<<<<<<< HEAD
+
 
 @main_bp.route("/admin/users")
 @login_required
@@ -703,7 +703,10 @@ def admin_users():
     query += " ORDER BY Username ASC"
 
     users = db.execute(query, params).fetchall()
-    return render_template("admin_users.html", users=users, search=search,
-                           role_filter=role_filter, status_filter=status_filter)
-=======
->>>>>>> f60ef4d86740cda79d7aa7fafcdcbe362f327b5f
+    return render_template(
+        "admin_users.html",
+        users=users,
+        search=search,
+        role_filter=role_filter,
+        status_filter=status_filter,
+    )
