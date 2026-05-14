@@ -170,41 +170,37 @@ def publish():
         db = get_db()
         db.execute(
             "INSERT INTO Posts (titre, description, date, localisation, latitude, longitude, Photo, Username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                titre,
-                description,
-                date_post,
-                localisation,
-                latitude,
-                longitude,
-                filename,
-                current_user.Username,
-            ),
+            (titre, description, date_post, localisation, latitude, longitude, filename, current_user.Username),
         )
-        db.execute(
-            "UPDATE UserStats SET NbrePostsAlltime = NbrePostsAlltime + 1 WHERE UserId = ?",
-            (current_user.id,),
-        )
+
         stats = db.execute(
             "SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?",
-            (current_user.id,),
+            (current_user.id,)
         ).fetchone()
-        if stats:
-            new_xp = calculate_tot(stats["NbrePostsAlltime"], stats["NBreLikesAlltime"])
-            new_level = calcul_levels(new_xp)
-            db.execute(
-                "UPDATE UserStats SET TotalXP = ?, CurrentLevel = ? WHERE UserId = ?",
-                (new_xp, new_level, current_user.id),
-            )
+        
+        if not stats:
+            db.execute("INSERT INTO UserStats (UserId, NbrePostsAlltime, NBreLikesAlltime, TotalXP, CurrentLevel) VALUES (?, 0, 0, 0, 1)", (current_user.id,))
+            nbre_posts = 0
+            nbre_likes = 0
+        else:
+            nbre_posts = stats["NbrePostsAlltime"]
+            nbre_likes = stats["NBreLikesAlltime"]
+            
+        nbre_posts += 1
+        new_xp = calculate_tot(nbre_posts, nbre_likes)
+        new_level = calcul_levels(new_xp)
+        db.execute(
+            "UPDATE UserStats SET NbrePostsAlltime = ?, TotalXP = ?, CurrentLevel = ? WHERE UserId = ?",
+            (nbre_posts, new_xp, new_level, current_user.id)
+        )
 
         post_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
         log_action(db, current_user.id, "POST_CREATED", post_id, "post")
         db.commit()
-        flash("Post publié.")
+        
+        flash("Post publié avec succès ! +50 XP 🌱")
         return redirect(url_for("main.index"))
-
     return render_template("publish.html")
-
 
 @main_bp.route("/like/<int:post_id>", methods=["POST"])
 @login_required
@@ -312,10 +308,10 @@ def profile():
         (current_user.Username,),
     ).fetchall()
     stats = db.execute(
-        "SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?",
-        (current_user.id,),
+        "SELECT TotalXP, CurrentLevel FROM UserStats WHERE UserId = ?",
+        (current_user.id,)
     ).fetchone()
-    xp = stats["TotalXp"] if stats else 0
+    xp = stats["TotalXP"] if stats else 0
     level = stats["CurrentLevel"] if stats else 1
     user_badge = badge(level)
     profile_user = {"Username": current_user.Username, "Role": current_user.Role}
@@ -352,10 +348,10 @@ def user_profile(username):
         (user_row["Id"], username),
     ).fetchone()[0]
     stats = db.execute(
-        "SELECT TotalXp, CurrentLevel FROM UserStats WHERE UserId = ?",
+        "SELECT TotalXP, CurrentLevel FROM UserStats WHERE UserId = ?",
         (user_row["Id"],),
     ).fetchone()
-    xp = stats["TotalXp"] if stats else 0
+    xp = stats["TotalXP"] if stats else 0
     level = stats["CurrentLevel"] if stats else 1
     user_badge = badge(level)
     profile_user = {
@@ -676,6 +672,7 @@ def user_logs(user_id):
     return jsonify(result)
 
 
+
 @main_bp.route("/admin/users")
 @login_required
 def admin_users():
@@ -710,3 +707,57 @@ def admin_users():
         role_filter=role_filter,
         status_filter=status_filter,
     )
+
+@main_bp.route("/tableau")
+@login_required
+def tableau():
+    db = get_db()
+    
+    #pagination et ses paramêtres
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    offset = (page - 1) * per_page
+    
+    #et trier
+    sort_by = request.args.get('sort_by', 'Date')
+    order = request.args.get('order', 'DESC').upper()
+
+    #dico de validation
+    valid_columns = {
+        'Date': 'Date', 
+        'Espece': 'Titre', 
+        'Lieu': 'Localisation'
+    }
+    
+    if sort_by not in valid_columns:
+        sort_by = 'Date'
+    if order not in ['ASC', 'DESC']:
+        order = 'DESC'
+    order_column = valid_columns[sort_by]
+
+    #Request de tri et pagination
+    #Note: Hey Nizar, si tu as déjà créé la table Especes, on pourra ajouter un LEFT JOIN ici plus tard pour la 'Classe'
+    query = f"""
+        SELECT Id, Titre as Espece, strftime('%Y-%m-%d', Date) as Date, 
+               Localisation, Username, Photo 
+        FROM Posts 
+        ORDER BY {order_column} {order}
+        LIMIT ? OFFSET ?
+    """
+    posts = db.execute(query, (per_page, offset)).fetchall()
+
+    #count total pour le nbr de pages
+    total_posts = db.execute("SELECT COUNT(*) FROM Posts").fetchone()[0]
+    total_pages = (total_posts + per_page - 1) // per_page
+    next_order = 'ASC' if order == 'DESC' else 'DESC'
+
+    return render_template(
+        "tableau.html",
+        posts=posts,
+        page=page,
+        total_pages=total_pages,
+        sort_by=sort_by,
+        order=order,
+        next_order=next_order
+    )
+

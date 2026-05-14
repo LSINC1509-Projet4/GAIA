@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GAIA - Tableau des Observations</title>
+        
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+        
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/tableau.css') }}" />
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    </head>
+    <body>
+        <div class="navbar">
+            <div class="user-info-block">
+                <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
+                <span class="user-greeting">Vue Tableau</span>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('main.index') }}" class="btn btn-post" title="Feed principal">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+                
+                <a href="{{ url_for('main.tableau') }}" class="btn btn-post" title="Vue Tableau">
+                    <i class="fa-solid fa-table"></i>
+                </a>
+                
+                <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </a>
+                
+                <a href="{{ url_for('main.publish') }}" class="btn btn-post" title="Publier">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                
+                {% if current_user.Role == 'Biologiste' %}
+                <a href="{{ url_for('main.validation_post') }}" class="btn btn-validation" title="Validation">
+                    <i class="fa-solid fa-list-check"></i> Validation
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('main.profile') }}" class="btn btn-post" title="Mon profil">
+                    <i class="fa-solid fa-user"></i>
+                </a>
+                
+                {% if current_user.Role == 'Admin' %}
+                <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post btn-reports" title="Signalements">
+                    <i class="fa-solid fa-flag"></i>
+                </a>
+                {% endif %}
+                
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout" title="Déconnexion">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h2>Observations (Page {{ page }}/{{ total_pages }})</h2>
+            <table class="gaia-table">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>
+                            <a href="?sort_by=Espece&order={{ next_order if sort_by == 'Espece' else 'ASC' }}">
+                                Espèce 
+                                {% if sort_by == 'Espece' %}
+                                    <i class="fa-solid fa-sort-{{ 'down' if order == 'DESC' else 'up' }}"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-sort"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="?sort_by=Lieu&order={{ next_order if sort_by == 'Lieu' else 'ASC' }}">
+                                Localisation
+                                {% if sort_by == 'Lieu' %}
+                                    <i class="fa-solid fa-sort-{{ 'down' if order == 'DESC' else 'up' }}"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-sort"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="?sort_by=Date&order={{ next_order if sort_by == 'Date' else 'DESC' }}">
+                                Date
+                                {% if sort_by == 'Date' %}
+                                    <i class="fa-solid fa-sort-{{ 'down' if order == 'DESC' else 'up' }}"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-sort"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>Observateur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>
+                            {% if post.Photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + post.Photo) }}" class="thumbnail" alt="Photo" />
+                            {% else %}
+                            <span style="color:#a0aec0; font-size: 0.8em;">Aucune</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ post.Espece }}</strong></td>
+                        <td>📍 {{ post.Localisation or 'Inconnue' }}</td>
+                        <td>{{ post.Date }}</td>
+                        <td>
+                            <a href="{{ url_for('main.user_profile', username=post.Username) }}" style="color:#2f855a; text-decoration:none; font-weight: 600;">
+                                {{ post.Username }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px;">Aucune observation trouvée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                {% if page > 1 %}
+                <a href="?page={{ page - 1 }}&sort_by={{ sort_by }}&order={{ order }}" class="page-btn">« Précédent</a>
+                {% endif %}
+                
+                <span class="page-btn active">{{ page }}</span>
+
+                {% if page < total_pages %}
+                <a href="?page={{ page + 1 }}&sort_by={{ sort_by }}&order={{ order }}" class="page-btn">Suivant »</a>
+                {% endif %}
+            </div>
+        </div>
+    </body>
+</html>
