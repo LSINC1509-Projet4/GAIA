@@ -40,19 +40,21 @@ def index():
     date_to = request.args.get("date_to", "").strip()
     sort = request.args.get("sort", "recent")
 
-    query = """SELECT Posts.Id, Titre, Description, Commentaire,
+    # Jointure ajoutée pour lier Posts avec Especes (pour le Titre) et Users (pour le Username)
+    query = """SELECT Posts.Id, Especes.Nom as Titre, Description, Commentaire,
                strftime('%Y-%m-%d', Date) as Date,
                Localisation, Latitude, Longitude, Badges, Posts.Username, Photo,is_verified,
                (SELECT COUNT(*) FROM Likes WHERE PostId = Posts.Id) as LikeCount,
                UserStats.CurrentLevel
                FROM Posts
-               LEFT JOIN Users ON Posts.Username = Users.Username
+               LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+               LEFT JOIN Users ON Posts.User_Id = Users.Id
                LEFT JOIN UserStats ON Users.Id = UserStats.UserId
                WHERE 1=1"""
     params = []
 
     if search:
-        query += " AND (Titre LIKE ? OR Description LIKE ? OR Localisation LIKE ?)"
+        query += " AND (Especes.Nom LIKE ? OR Description LIKE ? OR Localisation LIKE ?)"
         params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
 
     if location:
@@ -60,7 +62,7 @@ def index():
         params.append(location)
 
     if animal:
-        query += " AND Titre LIKE ?"
+        query += " AND Especes.Nom LIKE ?"
         params.append(f"%{animal}%")
 
     if date_from:
@@ -80,19 +82,29 @@ def index():
     if sort == "old":
         query += " ORDER BY Date ASC"
     elif sort == "az":
-        query += " ORDER BY Titre ASC"
+        query += " ORDER BY Especes.Nom ASC"
     elif sort == "za":
-        query += " ORDER BY Titre DESC"
+        query += " ORDER BY Especes.Nom DESC"
     else:
         query += " ORDER BY Date DESC"
 
     posts = db.execute(query, params).fetchall()
-    comments = db.execute("SELECT * FROM Comments ORDER BY Date ASC").fetchall()
+
+    # Récupération du pseudo dans la table des commentaires
+    comments = db.execute("""
+        SELECT Comments.*, Users.Username as Username
+        FROM Comments
+        JOIN Users ON Comments.User_Id = Users.Id
+        ORDER BY Date ASC
+    """).fetchall()
+
     locations_list = db.execute(
         "SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation"
     ).fetchall()
+
+    # La liste d'animaux se base désormais sur la table Especes
     animals_list = db.execute(
-        "SELECT DISTINCT Titre FROM Posts ORDER BY Titre"
+        "SELECT DISTINCT Nom as Titre FROM Especes ORDER BY Nom"
     ).fetchall()
 
     return render_template(
@@ -152,7 +164,7 @@ def register():
 @login_required
 def publish():
     if request.method == "POST":
-        titre = request.form.get("Titre")
+        nom_espece = request.form.get("Titre")
         description = request.form.get("Description")
         date_post = datetime.now().strftime("%Y-%m-%d")
         localisation = request.form.get("Localisation")
@@ -168,9 +180,18 @@ def publish():
             file.save(os.path.join(upload_path, filename))
 
         db = get_db()
+
+        # Gestion de l'espèce : on la cherche, ou on la crée si elle n'existe pas
+        espece = db.execute("SELECT Id FROM Especes WHERE Nom = ?", (nom_espece,)).fetchone()
+        if espece:
+            espece_id = espece["Id"]
+        else:
+            cursor = db.execute("INSERT INTO Especes (Nom) VALUES (?)", (nom_espece,))
+            espece_id = cursor.lastrowid
+
         db.execute(
-            "INSERT INTO Posts (titre, description, date, localisation, latitude, longitude, Photo, Username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (titre, description, date_post, localisation, latitude, longitude, filename, current_user.Username),
+            "INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, Photo, User_Id, Espece_Id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (description, date_post, localisation, latitude, longitude, filename, current_user.id, espece_id),
         )
 
         stats = db.execute(
@@ -202,6 +223,7 @@ def publish():
         return redirect(url_for("main.index"))
     return render_template("publish.html")
 
+
 @main_bp.route("/like/<int:post_id>", methods=["POST"])
 @login_required
 def like_post(post_id):
@@ -211,14 +233,11 @@ def like_post(post_id):
         (current_user.id, post_id),
     ).fetchone()
 
-    post = db.execute("SELECT Username FROM Posts WHERE Id = ?", (post_id,)).fetchone()
+    post = db.execute("SELECT User_Id FROM Posts WHERE Id = ?", (post_id,)).fetchone()
     if not post:
         return redirect(url_for("main.index"))
 
-    author = db.execute(
-        "SELECT Id FROM Users WHERE Username = ?", (post["Username"],)
-    ).fetchone()
-    author_id = author["Id"] if author else None
+    author_id = post["User_Id"]
 
     if existing_like:
         db.execute(
@@ -269,11 +288,13 @@ def admin_reports():
 
     db = get_db()
     reported = db.execute("""
-        SELECT p.Id, p.Titre, p.Username, p.Photo, p.Localisation,
+        SELECT p.Id, e.Nom as Titre, u.Username as Username, p.Photo, p.Localisation,
                strftime('%Y-%m-%d', p.Date) as Date,
                COUNT(r.id) as nb_reports
         FROM Posts p
+        LEFT JOIN Especes e ON p.Espece_Id = e.Id
         JOIN Report r ON r.post_id = p.Id
+        JOIN Users u ON p.User_Id = u.Id
         GROUP BY p.Id
         ORDER BY nb_reports DESC
     """).fetchall()
@@ -299,22 +320,33 @@ def dismiss_reports(post_id):
 @login_required
 def profile():
     db = get_db()
-    posts = db.execute(
-        "SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC",
-        (current_user.Username,),
-    ).fetchall()
-    comments = db.execute(
-        "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC",
-        (current_user.Username,),
-    ).fetchall()
+    posts = db.execute("""
+        SELECT Posts.*, Especes.Nom as Titre, Users.Username as Username
+        FROM Posts
+        LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+        JOIN Users ON Posts.User_Id = Users.Id
+        WHERE Posts.User_Id = ?
+        ORDER BY Date DESC
+    """, (current_user.id,)).fetchall()
+
+    comments = db.execute("""
+        SELECT Comments.*, Users.Username as Username
+        FROM Comments
+        JOIN Users ON Comments.User_Id = Users.Id
+        WHERE Comments.User_Id = ?
+        ORDER BY Date DESC
+    """, (current_user.id,)).fetchall()
+
     stats = db.execute(
         "SELECT TotalXP, CurrentLevel FROM UserStats WHERE UserId = ?",
         (current_user.id,)
     ).fetchone()
+
     xp = stats["TotalXP"] if stats else 0
     level = stats["CurrentLevel"] if stats else 1
     user_badge = badge(level)
     profile_user = {"Username": current_user.Username, "Role": current_user.Role}
+
     return render_template(
         "profile.html",
         posts=posts,
@@ -336,24 +368,42 @@ def user_profile(username):
         "SELECT Id, Role, Ban_Status, Ban_Until FROM Users WHERE Username = ?",
         (username,),
     ).fetchone()
-    posts = db.execute(
-        "SELECT * FROM Posts WHERE Username = ? ORDER BY Date DESC", (username,)
-    ).fetchall()
-    comments = db.execute(
-        "SELECT * FROM Comments WHERE Username = ? ORDER BY Date DESC", (username,)
-    ).fetchall()
-    # compte le nb de signalements recus (compte + posts)
+
+    if not user_row:
+        flash("Utilisateur introuvable.")
+        return redirect(url_for("main.index"))
+
+    posts = db.execute("""
+        SELECT Posts.*, Especes.Nom as Titre, Users.Username as Username
+        FROM Posts
+        LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+        JOIN Users ON Posts.User_Id = Users.Id
+        WHERE Posts.User_Id = ?
+        ORDER BY Date DESC
+    """, (user_row["Id"],)).fetchall()
+
+    comments = db.execute("""
+        SELECT Comments.*, Users.Username as Username
+        FROM Comments
+        JOIN Users ON Comments.User_Id = Users.Id
+        WHERE Comments.User_Id = ?
+        ORDER BY Date DESC
+    """, (user_row["Id"],)).fetchall()
+
     report_count = db.execute(
-        "SELECT COUNT(*) FROM REPORT WHERE Reported_User_Id = ? OR post_id IN (SELECT Id FROM Posts WHERE Username = ?)",
-        (user_row["Id"], username),
+        "SELECT COUNT(*) FROM REPORT WHERE Reported_User_Id = ? OR post_id IN (SELECT Id FROM Posts WHERE User_Id = ?)",
+        (user_row["Id"], user_row["Id"]),
     ).fetchone()[0]
+
     stats = db.execute(
         "SELECT TotalXP, CurrentLevel FROM UserStats WHERE UserId = ?",
         (user_row["Id"],),
     ).fetchone()
+
     xp = stats["TotalXP"] if stats else 0
     level = stats["CurrentLevel"] if stats else 1
     user_badge = badge(level)
+
     profile_user = {
         "Id": user_row["Id"],
         "Username": username,
@@ -361,6 +411,7 @@ def user_profile(username):
         "Ban_Status": user_row["Ban_Status"],
         "Ban_Until": user_row["Ban_Until"],
     }
+
     return render_template(
         "profile.html",
         posts=posts,
@@ -382,11 +433,11 @@ def add_comment(post_id):
 
     db = get_db()
     db.execute(
-        "INSERT INTO Comments (Contenu, Date, Username, Post_Id, Parent_Id) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO Comments (Contenu, Date, User_Id, Post_Id, Parent_Id) VALUES (?, ?, ?, ?, ?)",
         (
             contenu,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            current_user.Username,
+            current_user.id,
             post_id,
             parent_id,
         ),
@@ -428,10 +479,13 @@ def get_animals():
 @login_required
 def edit_post(post_id):
     db = get_db()
-    post = db.execute(
-        "SELECT Id, Titre, Description, Localisation, Latitude, Longitude, Photo, Username FROM Posts WHERE Id = ?",
-        (post_id,),
-    ).fetchone()
+    post = db.execute("""
+        SELECT p.Id, e.Nom as Titre, p.Description, p.Localisation, p.Latitude, p.Longitude, p.Photo, u.Username as Username
+        FROM Posts p
+        JOIN Users u ON p.User_Id = u.Id
+        LEFT JOIN Especes e ON p.Espece_Id = e.Id
+        WHERE p.Id = ?
+    """, (post_id,)).fetchone()
 
     if post is None:
         flash("Post introuvable.")
@@ -442,7 +496,7 @@ def edit_post(post_id):
         return redirect(url_for("main.index"))
 
     if request.method == "POST":
-        titre = request.form.get("Titre")
+        nouveau_nom = request.form.get("Titre")
         description = request.form.get("Description")
         localisation = request.form.get("Localisation")
         latitude = request.form.get("Latitude")
@@ -456,9 +510,17 @@ def edit_post(post_id):
                 os.makedirs(upload_path)
             file.save(os.path.join(upload_path, filename))
 
+        # Vérifier ou créer la nouvelle espèce
+        espece = db.execute("SELECT Id FROM Especes WHERE Nom = ?", (nouveau_nom,)).fetchone()
+        if espece:
+            espece_id = espece["Id"]
+        else:
+            cursor = db.execute("INSERT INTO Especes (Nom) VALUES (?)", (nouveau_nom,))
+            espece_id = cursor.lastrowid
+
         db.execute(
-            "UPDATE Posts SET Titre=?, Description=?, Localisation=?, Latitude=?, Longitude=?, Photo=? WHERE Id=?",
-            (titre, description, localisation, latitude, longitude, filename, post_id),
+            "UPDATE Posts SET Espece_Id=?, Description=?, Localisation=?, Latitude=?, Longitude=?, Photo=? WHERE Id=?",
+            (espece_id, description, localisation, latitude, longitude, filename, post_id),
         )
         log_action(db, current_user.id, "POST_EDITED", post_id, "post")
         db.commit()
@@ -472,11 +534,14 @@ def edit_post(post_id):
 @login_required
 def carte():
     db = get_db()
-    query = (
-        "SELECT Id, Titre, Description, strftime('%Y-%m-%d', Date) as Date, "
-        "Localisation, Latitude, Longitude, Username, Photo "
-        "FROM Posts WHERE Latitude IS NOT NULL AND Longitude IS NOT NULL"
-    )
+    query = """
+        SELECT Posts.Id, Especes.Nom as Titre, Description, strftime('%Y-%m-%d', Date) as Date,
+        Localisation, Latitude, Longitude, Users.Username as Username, Photo
+        FROM Posts
+        LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+        JOIN Users ON Posts.User_Id = Users.Id
+        WHERE Latitude IS NOT NULL AND Longitude IS NOT NULL
+    """
     if current_user.Role != "Admin":
         query += " AND (SELECT COUNT(*) FROM Report WHERE post_id = Posts.Id) < 3"
     posts = db.execute(query).fetchall()
@@ -492,9 +557,12 @@ def carte():
 @login_required
 def delete_post(post_id):
     db = get_db()
-    post = db.execute(
-        "SELECT Id, Username FROM Posts WHERE Id = ?", (post_id,)
-    ).fetchone()
+    post = db.execute("""
+        SELECT p.Id, u.Username as Username
+        FROM Posts p
+        JOIN Users u ON p.User_Id = u.Id
+        WHERE p.Id = ?
+    """, (post_id,)).fetchone()
 
     if post is None:
         flash("Post introuvable.")
@@ -504,7 +572,7 @@ def delete_post(post_id):
         flash("Action non autorisée.")
         return redirect(url_for("main.index"))
 
-    db.execute("DELETE FROM Comments WHERE Post_Id = ?", (post_id,))
+    # Les commentaires et reports liés sont supprimés automatiquement grâce au ON DELETE CASCADE de la table Posts
     db.execute("DELETE FROM Posts WHERE Id = ?", (post_id,))
     db.commit()
     flash("Post supprimé.")
@@ -515,22 +583,36 @@ def delete_post(post_id):
 @login_required
 def validation_post():
     if current_user.Role != "Biologiste":
-        flash("Accès non autorisée .")
+        flash("Accès non autorisé.")
         return redirect(url_for("main.index"))
     db = get_db()
 
     if request.method == "POST":
         post_id = request.form.get("post_id")
-        new_titre = request.form.get("Titre")
+        nouveau_nom = request.form.get("Titre")
+        nouvelle_classe = request.form.get("Classe") # Le champ "Classe" doit exister dans ton formulaire HTML
+
+        # Le biologiste vérifie l'espèce ou la corrige
+        espece = db.execute("SELECT Id FROM Especes WHERE Nom = ?", (nouveau_nom,)).fetchone()
+        if espece:
+            # S'il ajoute une classe à une espèce existante
+            if nouvelle_classe:
+                db.execute("UPDATE Especes SET Classe = ? WHERE Id = ?", (nouvelle_classe, espece["Id"]))
+            espece_id = espece["Id"]
+        else:
+            cursor = db.execute("INSERT INTO Especes (Nom, Classe) VALUES (?, ?)", (nouveau_nom, nouvelle_classe))
+            espece_id = cursor.lastrowid
 
         db.execute(
-            "UPDATE Posts SET Titre = ? , is_verified = 1 WHERE Id = ?",
-            (new_titre, post_id),
+            "UPDATE Posts SET Espece_Id = ? , is_verified = 1 WHERE Id = ?",
+            (espece_id, post_id),
         )
         db.commit()
-
-    query = """ SELECT Id , Titre , Description , strftime('%Y-%m-%d' , Date) as Date , Localisation , Photo , is_verified
-    FROM Posts WHERE is_verified = 0 ORDER BY Date DESC"""
+    query = """ SELECT Posts.Id, Especes.Nom as Titre, Description, strftime('%Y-%m-%d', Date) as Date,
+                Localisation, Photo, is_verified
+                FROM Posts
+                LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+                WHERE is_verified = 0 ORDER BY Date DESC"""
 
     unverified_posts = db.execute(query).fetchall()
     return render_template("validation.html", posts=unverified_posts)
@@ -540,34 +622,27 @@ def validation_post():
 @login_required
 def report_post(post_id):
     db = get_db()
-    # Quand on report on récupère les données de l'utilisateurs et du poste concerné
     already = db.execute(
         "SELECT id FROM REPORT WHERE reporter_id = ? AND post_id = ?",
         (current_user.id, post_id),
     ).fetchone()
     if not already:
-        # S'il n'est pas deja dans la DB on l'ajoute dans REPORT
         db.execute(
             "INSERT INTO REPORT (reporter_id, post_id) VALUES (?, ?)",
             (current_user.id, post_id),
         )
         post = db.execute(
-            "SELECT Username FROM Posts WHERE Id = ?", (post_id,)
+            "SELECT User_Id FROM Posts WHERE Id = ?", (post_id,)
         ).fetchone()
         if post:
-            author = db.execute(
-                "SELECT Id FROM Users WHERE Username = ?", (post["Username"],)
-            ).fetchone()
-            if author:
-                # Ajout dans les logs
-                log_action(
-                    db,
-                    author["Id"],
-                    "REPORTED_BY",
-                    current_user.id,
-                    "user",
-                    f"par {current_user.Username} (post #{post_id})",
-                )
+            log_action(
+                db,
+                post["User_Id"],
+                "REPORTED_BY",
+                current_user.id,
+                "user",
+                f"par {current_user.Username} (post #{post_id})",
+            )
         log_action(db, current_user.id, "REPORTED", post_id, "post")
         db.commit()
     return redirect(request.referrer)
@@ -577,7 +652,6 @@ def report_post(post_id):
 @login_required
 def report_user(user_id):
     db = get_db()
-    # on recupere les données du "reporter" et du reporté
     already = db.execute(
         "SELECT id FROM REPORT WHERE reporter_id = ? AND Reported_User_Id = ?",
         (current_user.id, user_id),
@@ -587,7 +661,6 @@ def report_user(user_id):
             "INSERT INTO REPORT (reporter_id, Reported_User_Id) VALUES (?, ?)",
             (current_user.id, user_id),
         )
-        # Ajout dans les logs
         log_action(
             db,
             user_id,
@@ -608,13 +681,11 @@ def ban_user(user_id):
     ban_until = request.form.get("ban_until")
     db = get_db()
     if ban_type == "temporary" and ban_until:
-        # Ban temporaire // update de la colonne ban_status
         db.execute(
             "UPDATE Users SET Ban_Status = 'temporary', Ban_Until = ? WHERE Id = ?",
             (ban_until, user_id),
         )
     else:
-        # Perma ban
         db.execute(
             "UPDATE Users SET Ban_Status = 'permanent', Ban_Until = NULL WHERE Id = ?",
             (user_id,),
@@ -627,7 +698,6 @@ def ban_user(user_id):
 @login_required
 def unban_user(user_id):
     db = get_db()
-    # on update le status utilisateur a NULL
     db.execute(
         "UPDATE Users SET Ban_Status = NULL, Ban_Until = NULL WHERE Id = ?", (user_id,)
     )
@@ -639,19 +709,9 @@ def unban_user(user_id):
 @login_required
 def delete_user(user_id):
     db = get_db()
-    user = db.execute("SELECT Username FROM Users WHERE Id = ?", (user_id,)).fetchone()
-    if user:  # on s'assure qu'il est dans la db
-        username = user["Username"]
-        # on l'enleve de toutes les tables /// pour niz, si on normalise on peut faire un DELETE CASCADE dans les tables
-        db.execute("DELETE FROM Comments WHERE Username = ?", (username,))
-        db.execute("DELETE FROM Likes WHERE UserId = ?", (user_id,))
-        db.execute(
-            "DELETE FROM REPORT WHERE reporter_id = ? OR Reported_User_Id = ?",
-            (user_id, user_id),
-        )
-        db.execute("DELETE FROM UserLogs WHERE User_Id = ?", (user_id,))
-        db.execute("DELETE FROM UserStats WHERE UserId = ?", (user_id,))
-        db.execute("DELETE FROM Posts WHERE Username = ?", (username,))
+    user = db.execute("SELECT Id FROM Users WHERE Id = ?", (user_id,)).fetchone()
+    if user:
+        # Grâce au CASCADE SQL, tous les Posts, Likes, Commentaires, Stats, Logs de l'utilisateur sont supprimés automatiquement
         db.execute("DELETE FROM Users WHERE Id = ?", (user_id,))
         db.commit()
     return redirect(url_for("main.index"))
@@ -664,30 +724,64 @@ def user_logs(user_id):
     logs = db.execute(
         "SELECT * FROM UserLogs WHERE User_Id = ? ORDER BY Created_At DESC", (user_id,)
     ).fetchall()
-    # on convertit en dict pour jsonify
     result = []
     for log in logs:
         result.append(dict(log))
     return jsonify(result)
 
+
+
+@main_bp.route("/admin/users")
+@login_required
+def admin_users():
+    if current_user.Role != "Admin":
+        return redirect(url_for("main.index"))
+    db = get_db()
+    search = request.args.get("q", "").strip()
+    role_filter = request.args.get("role", "").strip()
+    status_filter = request.args.get("status", "").strip()
+
+    query = "SELECT Id, Username, Role, Ban_Status, Ban_Until FROM Users WHERE 1=1"
+    params = []
+    if search:
+        query += " AND Username LIKE ?"
+        params.append(f"%{search}%")
+    if role_filter:
+        query += " AND Role = ?"
+        params.append(role_filter)
+    if status_filter == "actif":
+        query += " AND Ban_Status IS NULL"
+    elif status_filter == "permanent":
+        query += " AND Ban_Status = 'permanent'"
+    elif status_filter == "temporary":
+        query += " AND Ban_Status = 'temporary'"
+    query += " ORDER BY Username ASC"
+
+    users = db.execute(query, params).fetchall()
+    return render_template(
+        "admin_users.html",
+        users=users,
+        search=search,
+        role_filter=role_filter,
+        status_filter=status_filter,
+    )
+
+
 @main_bp.route("/tableau")
 @login_required
 def tableau():
     db = get_db()
-
     #pagination et ses paramêtres
     page = request.args.get('page', 1, type=int)
     per_page = 20
     offset = (page - 1) * per_page
-
     #et trier
     sort_by = request.args.get('sort_by', 'Date')
     order = request.args.get('order', 'DESC').upper()
 
-    #dico de validation
     valid_columns = {
         'Date': 'Date',
-        'Espece': 'Titre',
+        'Espece': 'Especes.Nom',
         'Lieu': 'Localisation'
     }
 
@@ -697,18 +791,20 @@ def tableau():
         order = 'DESC'
     order_column = valid_columns[sort_by]
 
-    #Request de tri et pagination
-    #Note: Hey Nizar, si tu as déjà créé la table Especes, on pourra ajouter un LEFT JOIN ici plus tard pour la 'Classe'
+    # On utilise maintenant la table Especes pour afficher la Classe
     query = f"""
-        SELECT Id, Titre as Espece, strftime('%Y-%m-%d', Date) as Date,
-               Localisation, Username, Photo
+        SELECT Posts.Id, Especes.Nom as Espece, Especes.Classe,
+               strftime('%Y-%m-%d', Date) as Date,
+               Localisation, Users.Username as Username, Photo
         FROM Posts
+        LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+        JOIN Users ON Posts.User_Id = Users.Id
+
         ORDER BY {order_column} {order}
         LIMIT ? OFFSET ?
     """
     posts = db.execute(query, (per_page, offset)).fetchall()
 
-    #count total pour le nbr de pages
     total_posts = db.execute("SELECT COUNT(*) FROM Posts").fetchone()[0]
     total_pages = (total_posts + per_page - 1) // per_page
     next_order = 'ASC' if order == 'DESC' else 'DESC'
@@ -722,3 +818,34 @@ def tableau():
         order=order,
         next_order=next_order
     )
+
+
+@main_bp.route("/graphs")
+@login_required
+def graphs():
+    db = get_db()
+
+    # 1. Répartition par Classe (Pie Chart)
+    # Note : On compte les observations réelles liées aux espèces
+    classe_dist = db.execute("""
+        SELECT e.Classe, COUNT(p.Id) as count
+        FROM Posts p
+        JOIN Especes e ON p.Espece_Id = e.Id
+        GROUP BY e.Classe
+    """).fetchall()
+
+    # 2. Évolution temporelle (Line Chart)
+    post_growth = db.execute("""
+        SELECT DATE(Date) as date, COUNT(Id) as count
+        FROM Posts GROUP BY date ORDER BY date
+    """).fetchall()
+
+    # 3. Données pour l'inventaire et l'arbre
+    # On récupère tout le catalogue (issu de ton Animaux.csv)
+    species_raw = db.execute("SELECT Id, Nom, Parent_Id, Classe FROM Especes ORDER BY Nom").fetchall()
+    all_species = [dict(row) for row in species_raw]
+
+    return render_template("graphs.html",
+                           classe_dist=classe_dist,
+                           post_growth=post_growth,
+                           all_species=all_species)
