@@ -18,9 +18,14 @@ def init_db():
     db = get_db()
     df = pd.read_csv("Animaux.csv")
     df.to_sql("Animaux", db, if_exists="replace", index=False)
-    df2 = df[["Nom de l'animal", "Classe"]].drop_duplicates()
+    df2 = df[["Nom de l'animal", "Classe"]].drop_duplicates(subset=["Nom de l'animal"])
     df2 = df2.rename(columns={"Nom de l'animal": "Nom"})
-    df2.to_sql("Especes", db, if_exists="append", index=False)
+    noms_existants = pd.read_sql("SELECT Nom FROM Especes", db)["Nom"].tolist()
+    df2 = df2[~df2["Nom"].isin(noms_existants)]
+    
+    if not df2.empty:
+        df2.to_sql("Especes", db, if_exists="append", index=False)
+    
     print("Database initialized successfully.")
 
 
