@@ -42,7 +42,7 @@ def index():
 
     query = """SELECT Posts.Id, Titre, Description, Commentaire,
                strftime('%Y-%m-%d', Date) as Date,
-               Localisation, Latitude, Longitude, Badges, Posts.Username, Photo,
+               Localisation, Latitude, Longitude, Badges, Posts.Username, Photo,is_verified,
                (SELECT COUNT(*) FROM Likes WHERE PostId = Posts.Id) as LikeCount,
                UserStats.CurrentLevel
                FROM Posts
@@ -177,7 +177,7 @@ def publish():
             "SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?",
             (current_user.id,)
         ).fetchone()
-        
+
         if not stats:
             db.execute("INSERT INTO UserStats (UserId, NbrePostsAlltime, NBreLikesAlltime, TotalXP, CurrentLevel) VALUES (?, 0, 0, 0, 1)", (current_user.id,))
             nbre_posts = 0
@@ -185,7 +185,7 @@ def publish():
         else:
             nbre_posts = stats["NbrePostsAlltime"]
             nbre_likes = stats["NBreLikesAlltime"]
-            
+
         nbre_posts += 1
         new_xp = calculate_tot(nbre_posts, nbre_likes)
         new_level = calcul_levels(new_xp)
@@ -197,7 +197,7 @@ def publish():
         post_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
         log_action(db, current_user.id, "POST_CREATED", post_id, "post")
         db.commit()
-        
+
         flash("Post publié avec succès ! +50 XP 🌱")
         return redirect(url_for("main.index"))
     return render_template("publish.html")
@@ -528,7 +528,6 @@ def validation_post():
             (new_titre, post_id),
         )
         db.commit()
-        flash(f"Post #{post_id} bien vérifié")
 
     query = """ SELECT Id , Titre , Description , strftime('%Y-%m-%d' , Date) as Date , Localisation , Photo , is_verified
     FROM Posts WHERE is_verified = 0 ORDER BY Date DESC"""
@@ -675,23 +674,23 @@ def user_logs(user_id):
 @login_required
 def tableau():
     db = get_db()
-    
+
     #pagination et ses paramêtres
     page = request.args.get('page', 1, type=int)
     per_page = 20
     offset = (page - 1) * per_page
-    
+
     #et trier
     sort_by = request.args.get('sort_by', 'Date')
     order = request.args.get('order', 'DESC').upper()
 
     #dico de validation
     valid_columns = {
-        'Date': 'Date', 
-        'Espece': 'Titre', 
+        'Date': 'Date',
+        'Espece': 'Titre',
         'Lieu': 'Localisation'
     }
-    
+
     if sort_by not in valid_columns:
         sort_by = 'Date'
     if order not in ['ASC', 'DESC']:
@@ -701,9 +700,9 @@ def tableau():
     #Request de tri et pagination
     #Note: Hey Nizar, si tu as déjà créé la table Especes, on pourra ajouter un LEFT JOIN ici plus tard pour la 'Classe'
     query = f"""
-        SELECT Id, Titre as Espece, strftime('%Y-%m-%d', Date) as Date, 
-               Localisation, Username, Photo 
-        FROM Posts 
+        SELECT Id, Titre as Espece, strftime('%Y-%m-%d', Date) as Date,
+               Localisation, Username, Photo
+        FROM Posts
         ORDER BY {order_column} {order}
         LIMIT ? OFFSET ?
     """
