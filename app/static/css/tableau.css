@@ -66,5 +66,24 @@
     transition: 0.2s;
 }
 
-.page-btn:hover { background: #cbd5e0; }
-.page-btn.active { background: #48bb78; color: white; }
+.page-btn:hover {
+    background: #cbd5e0;
+}
+.page-btn.active {
+    background: #48bb78;
+    color: white;
+}
+
+/* --- RESPONSIVE MOBILE TABLEAU --- */
+@media (max-width: 768px) {
+    .table-container {
+        padding: 10px;
+        overflow-x: auto; /* Permet le scroll horizontal du tableau sur mobile */
+    }
+    .gaia-table th,
+    .gaia-table td {
+        padding: 8px;
+        font-size: 0.9rem;
+        white-space: nowrap; /* Empêche le texte de se casser sur plusieurs lignes */
+    }
+}

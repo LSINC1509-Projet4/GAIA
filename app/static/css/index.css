@@ -540,6 +540,42 @@ body {
     background-color: #b2ebf2;
 }
 
+
+/* --- 8. RESPONSIVE MOBILE --- */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+        border-radius: 12px;
+    }
+    .user-info-block {
+        width: 100%;
+        justify-content: center;
+    }
+    .search-form {
+        width: 100%;
+        max-width: 100%;
+    }
+    .nav-links-group,
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .post-card {
+        padding: 15px;
+    }
+    .post-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .action-btn {
+        flex: 1 1 calc(50% - 10px);
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
 /* --- 7. ADMIN USERS TABLE --- */
 .users-table {
     width: 100%;
