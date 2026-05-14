@@ -190,10 +190,22 @@ def publish():
             cursor = db.execute("INSERT INTO Especes (Nom) VALUES (?)", (nom_espece,))
             espece_id = cursor.lastrowid
 
+        # Type de photo : seul un biologiste peut épingler une planche naturaliste
+        type_photo = "observation"
+        if current_user.Role == "Biologiste" and request.form.get("TypePhoto") == "naturaliste":
+            type_photo = "naturaliste"
+
         db.execute(
-            "INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, Photo, User_Id, Espece_Id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (description, date_post, localisation, latitude, longitude, filename, current_user.id, espece_id),
+            "INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, Photo, User_Id, Espece_Id, TypePhoto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (description, date_post, localisation, latitude, longitude, filename, current_user.id, espece_id, type_photo),
         )
+
+        # Une planche naturaliste devient la photo de référence officielle de l'espèce
+        if type_photo == "naturaliste" and filename:
+            db.execute(
+                "UPDATE Especes SET PhotoNaturaliste = ? WHERE Id = ?",
+                (filename, espece_id),
+            )
 
         stats = db.execute(
             "SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?",

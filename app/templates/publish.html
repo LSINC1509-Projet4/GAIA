@@ -113,6 +113,13 @@
                     {{ 'required' if not post else '' }}
                 />
 
+                {% if current_user.Role == 'Biologiste' %}
+                <label class="naturaliste-toggle">
+                    <input type="checkbox" name="TypePhoto" value="naturaliste" />
+                    <span>Cette photo est une <strong>planche naturaliste</strong> (référence officielle de l'espèce)</span>
+                </label>
+                {% endif %}
+
                 <div class="button-group">
                     <a href="{{ url_for('main.index') }}" class="btn-back"
                         >Annuler</a

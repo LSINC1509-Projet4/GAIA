@@ -185,6 +185,32 @@ button[type="submit"]:hover {
     cursor: not-allowed;
 }
 
+.naturaliste-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0;
+    padding: 12px 14px;
+    background: #f0fff4;
+    border: 1.5px solid #c6f6d5;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #2d3748;
+}
+
+.naturaliste-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #48bb78;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.naturaliste-toggle strong {
+    color: #2f855a;
+}
+
 @media (max-width: 480px) {
     .container {
         padding: 25px 15px;
