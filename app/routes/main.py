@@ -40,33 +40,26 @@ def index():
     date_to = request.args.get("date_to", "").strip()
     sort = request.args.get("sort", "recent")
 
-    query = """SELECT 
-                Posts.Id, 
-                Especes.Nom as Titre, 
-                Posts.Description, 
-                Posts.Commentaire,
-                strftime('%Y-%m-%d', Posts.Date) as Date,
-                Posts.Localisation, 
-                Posts.Latitude, 
-                Posts.Longitude, 
-                Posts.Badges, 
-                Users.Username as Username, 
-                Posts.Photo,
-                (SELECT COUNT(*) FROM Likes WHERE PostId = Posts.Id) as LikeCount,
-                UserStats.CurrentLevel
-               FROM Posts
-               LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
-               LEFT JOIN Users ON Posts.User_Id = Users.Id
-               LEFT JOIN UserStats ON Users.Id = UserStats.UserId
-               WHERE 1=1"""
+    # Jointure ajoutée pour lier Posts avec Especes (pour le Titre) et Users (pour le Username)
+    query = """SELECT
+            Posts.*,
+            Users.Username,
+            Especes.Nom AS Titre,
+            UserStats.CurrentLevel
+        FROM Posts
+        JOIN Users ON Posts.User_Id = Users.Id
+        LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+        LEFT JOIN UserStats ON Posts.User_Id = UserStats.UserId
+        WHERE 1=1
+    """
     params = []
 
     if search:
-        query += " AND (Especes.Nom LIKE ? OR Posts.Description LIKE ? OR Posts.Localisation LIKE ?)"
+        query += " AND (Especes.Nom LIKE ? OR Description LIKE ? OR Localisation LIKE ?)"
         params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
 
     if location:
-        query += " AND Posts.Localisation = ?"
+        query += " AND Localisation = ?"
         params.append(location)
 
     if animal:
@@ -74,11 +67,11 @@ def index():
         params.append(f"%{animal}%")
 
     if date_from:
-        query += " AND Posts.Date >= ?"
+        query += " AND Date >= ?"
         params.append(date_from)
 
     if date_to:
-        query += " AND Posts.Date <= ?"
+        query += " AND Date <= ?"
         params.append(date_to)
 
     if current_user.Role != "Admin":
@@ -88,16 +81,17 @@ def index():
     params.append(current_user.id)
 
     if sort == "old":
-        query += " ORDER BY Posts.Date ASC"
+        query += " ORDER BY Date ASC"
     elif sort == "az":
         query += " ORDER BY Especes.Nom ASC"
     elif sort == "za":
         query += " ORDER BY Especes.Nom DESC"
     else:
-        query += " ORDER BY Posts.Date DESC"
+        query += " ORDER BY Date DESC"
 
     posts = db.execute(query, params).fetchall()
 
+    # Récupération du pseudo dans la table des commentaires
     comments = db.execute("""
         SELECT Comments.*, Users.Username as Username
         FROM Comments
@@ -105,8 +99,14 @@ def index():
         ORDER BY Date ASC
     """).fetchall()
 
-    locations_list = db.execute("SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation").fetchall()
-    animals_list = db.execute("SELECT DISTINCT Nom as Titre FROM Especes ORDER BY Nom").fetchall()
+    locations_list = db.execute(
+        "SELECT DISTINCT Localisation FROM Posts ORDER BY Localisation"
+    ).fetchall()
+
+    # La liste d'animaux se base désormais sur la table Especes
+    animals_list = db.execute(
+        "SELECT DISTINCT Nom as Titre FROM Especes ORDER BY Nom"
+    ).fetchall()
 
     return render_template(
         "index.html",
@@ -172,9 +172,8 @@ def publish():
         latitude = request.form.get("Latitude")
         longitude = request.form.get("Longitude")
         file = request.files.get("Photo")
-        
         filename = None
-        if file and file.filename != "":
+        if file and isinstance(file.filename, str) and file.filename != "":
             filename = secure_filename(file.filename)
             upload_path = os.path.join(current_app.root_path, "static/uploads")
             if not os.path.exists(upload_path):
@@ -183,7 +182,7 @@ def publish():
 
         db = get_db()
 
-        # Gestion de l'Espece_Id (Nouveauté DROITE)
+        # Gestion de l'espèce : on la cherche, ou on la crée si elle n'existe pas
         espece = db.execute("SELECT Id FROM Especes WHERE Nom = ?", (nom_espece,)).fetchone()
         if espece:
             espece_id = espece["Id"]
@@ -191,29 +190,38 @@ def publish():
             cursor = db.execute("INSERT INTO Especes (Nom) VALUES (?)", (nom_espece,))
             espece_id = cursor.lastrowid
 
-        # Insertion avec User_Id et Espece_Id
         db.execute(
             "INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, Photo, User_Id, Espece_Id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (description, date_post, localisation, latitude, longitude, filename, current_user.id, espece_id),
         )
 
-        # Logique XP GAUCHE (Maintenue)
-        stats = db.execute("SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?", (current_user.id,)).fetchone()
+        stats = db.execute(
+            "SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?",
+            (current_user.id,)
+        ).fetchone()
+
         if not stats:
-            db.execute("INSERT INTO UserStats (UserId, NbrePostsAlltime, NBreLikesAlltime, TotalXP, CurrentLevel) VALUES (?, 1, 0, 0, 1)", (current_user.id,))
-            nbre_posts, nbre_likes = 1, 0
+            db.execute("INSERT INTO UserStats (UserId, NbrePostsAlltime, NBreLikesAlltime, TotalXP, CurrentLevel) VALUES (?, 0, 0, 0, 1)", (current_user.id,))
+            nbre_posts = 0
+            nbre_likes = 0
         else:
-            nbre_posts = stats["NbrePostsAlltime"] + 1
+            nbre_posts = stats["NbrePostsAlltime"]
             nbre_likes = stats["NBreLikesAlltime"]
-            
+
+        nbre_posts += 1
         new_xp = calculate_tot(nbre_posts, nbre_likes)
         new_level = calcul_levels(new_xp)
-        db.execute("UPDATE UserStats SET NbrePostsAlltime = ?, TotalXP = ?, CurrentLevel = ? WHERE UserId = ?", (nbre_posts, new_xp, new_level, current_user.id))
+        db.execute(
+            "UPDATE UserStats SET NbrePostsAlltime = ?, TotalXP = ?, CurrentLevel = ? WHERE UserId = ?",
+            (nbre_posts, new_xp, new_level, current_user.id)
+        )
 
+        post_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+        log_action(db, current_user.id, "POST_CREATED", post_id, "post")
         db.commit()
+
         flash("Post publié avec succès ! +50 XP 🌱")
         return redirect(url_for("main.index"))
-    
     return render_template("publish.html")
 
 
