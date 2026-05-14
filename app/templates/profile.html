@@ -4,60 +4,112 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{{ profile_user.Username }} - Profil</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/index.css') }}"
+        />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/profile.css') }}"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        />
     </head>
     <body>
         {% set profile_id = profile_user.Id %}
         <div class="navbar">
             <div class="user-info-block">
-                <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
-                <span class="user-greeting">Hey, {{ current_user.Username }}</span>
+                <img
+                    src="{{ url_for('static', filename='Logo.png') }}"
+                    alt="GAIA Logo"
+                    class="nav-logo"
+                />
+                <span class="user-greeting"
+                    >Hey, {{ current_user.Username }}</span
+                >
             </div>
             <div class="nav-links">
-                <a href="{{ url_for('main.index') }}" class="btn btn-post" title="Feed">
+                <a
+                    href="{{ url_for('main.index') }}"
+                    class="btn btn-post"
+                    title="Feed"
+                >
                     <i class="fa-solid fa-newspaper"></i>
                 </a>
-                <a href="{{ url_for('main.carte') }}" class="btn btn-post" title="Carte">
+                <a
+                    href="{{ url_for('main.carte') }}"
+                    class="btn btn-post"
+                    title="Carte"
+                >
                     <i class="fa-solid fa-map-location-dot"></i>
                 </a>
-                <a href="{{ url_for('main.publish') }}" class="btn btn-post" title="Publier">
+                <a
+                    href="{{ url_for('main.publish') }}"
+                    class="btn btn-post"
+                    title="Publier"
+                >
                     <i class="fa-solid fa-plus"></i>
                 </a>
-                <a href="{{ url_for('main.profile') }}" class="btn btn-post" title="Mon profil">
+                <a
+                    href="{{ url_for('main.profile') }}"
+                    class="btn btn-post"
+                    title="Mon profil"
+                >
                     <i class="fa-solid fa-user"></i>
                 </a>
                 {% if current_user.Role == 'Admin' %}
-                <a href="{{ url_for('main.admin_reports') }}" class="btn btn-post btn-reports" title="Signalements">
+                <a
+                    href="{{ url_for('main.admin_reports') }}"
+                    class="btn btn-post btn-reports"
+                    title="Signalements"
+                >
                     <i class="fa-solid fa-flag"></i>
                 </a>
                 {% endif %}
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-logout" title="Déconnexion">
+                <a
+                    href="{{ url_for('auth.logout') }}"
+                    class="btn btn-logout"
+                    title="Déconnexion"
+                >
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </a>
             </div>
         </div>
 
         <div class="feed-container">
-
             <div class="profile-header">
-                <div class="profile-avatar">
-                    {{ profile_user.Username[0].upper() }}
+                <div class="profile-avatar" style="overflow: hidden">
+                    {% if profile_user.Avatar %}
+                    <img
+                        src="{{ url_for('static', filename='uploads/avatars/' + profile_user.Avatar) }}"
+                        alt="Avatar"
+                        style="width: 100%; height: 100%; object-fit: cover"
+                    />
+                    {% else %} {{ profile_user.Username[0].upper() }} {% endif
+                    %}
                 </div>
                 <div class="profile-info">
                     <h2>
-                        {{ profile_user.Username }}
-                        {% if profile_user.Ban_Status == 'permanent' %}
-                            <span class="ban-badge ban-permanent">Banni</span>
+                        {{ profile_user.Username }} {% if
+                        profile_user.Ban_Status == 'permanent' %}
+                        <span class="ban-badge ban-permanent">Banni</span>
                         {% elif profile_user.Ban_Status == 'temporary' %}
-                            <span class="ban-badge ban-temporary">Banni jusqu'au {{ profile_user.Ban_Until }}</span>
+                        <span class="ban-badge ban-temporary"
+                            >Banni jusqu'au {{ profile_user.Ban_Until }}</span
+                        >
                         {% endif %}
                     </h2>
                     <span class="profile-role">{{ profile_user.Role }}</span>
-                    <span class="profile-badge">{{ user_badge }} — Niveau {{ level }}</span>
+                    <span class="profile-badge"
+                        >{{ user_badge }} — Niveau {{ level }}</span
+                    >
                     <div class="xp-bar-container">
-                        <div class="xp-bar" style="width: {{ [xp % 100, 100] | min }}%"></div>
+                        <div
+                            class="xp-bar"
+                            style="width: {{ [xp % 100, 100] | min }}%"
+                        ></div>
                     </div>
                     <div class="xp-label">{{ xp | int }} XP</div>
                     <div class="profile-stats">
@@ -69,7 +121,8 @@
                             <div class="stat-number">{{ comments|length }}</div>
                             <div class="stat-label">Comments</div>
                         </div>
-                        {% if current_user.Role == 'Admin' and not is_own_profile %}
+                        {% if current_user.Role == 'Admin' and not
+                        is_own_profile %}
                         <div class="stat stat-reports">
                             <div class="stat-number">{{ report_count }}</div>
                             <div class="stat-label">Signalements</div>
@@ -79,8 +132,16 @@
                 </div>
 
                 {% if not is_own_profile %}
-                <form action="{{ url_for('main.report_user', user_id=profile_id) }}" method="POST" class="report-user-form">
-                    <button type="submit" class="btn-report-user" title="Signaler cet utilisateur">
+                <form
+                    action="{{ url_for('main.report_user', user_id=profile_id) }}"
+                    method="POST"
+                    class="report-user-form"
+                >
+                    <button
+                        type="submit"
+                        class="btn-report-user"
+                        title="Signaler cet utilisateur"
+                    >
                         <i class="fas fa-flag"></i> Signaler
                     </button>
                 </form>
@@ -92,41 +153,97 @@
                     <i class="fas fa-shield-alt"></i> Modération — Admin
                 </div>
                 <div class="admin-actions">
-                    <button class="admin-btn btn-logs"
-                            data-userid="{{ profile_id }}"
-                            data-username="{{ profile_user.Username }}"
-                            onclick="openLogs(this.dataset.userid, this.dataset.username)">
+                    <button
+                        class="admin-btn btn-logs"
+                        data-userid="{{ profile_id }}"
+                        data-username="{{ profile_user.Username }}"
+                        onclick="
+                            openLogs(this.dataset.userid, this.dataset.username)
+                        "
+                    >
                         <i class="fas fa-list-alt"></i> Voir les logs
                     </button>
-                    <form action="{{ url_for('main.ban_user', user_id=profile_id) }}" method="POST" style="display:inline;">
-                        <input type="hidden" name="ban_type" value="permanent">
-                        <button type="submit" class="admin-btn btn-ban"
-                                data-username="{{ profile_user.Username }}"
-                                onclick="return confirm('Bannir définitivement ' + this.dataset.username + ' ?')">
+                    <form
+                        action="{{ url_for('main.ban_user', user_id=profile_id) }}"
+                        method="POST"
+                        style="display: inline"
+                    >
+                        <input
+                            type="hidden"
+                            name="ban_type"
+                            value="permanent"
+                        />
+                        <button
+                            type="submit"
+                            class="admin-btn btn-ban"
+                            data-username="{{ profile_user.Username }}"
+                            onclick="
+                                return confirm(
+                                    'Bannir définitivement ' +
+                                        this.dataset.username +
+                                        ' ?',
+                                );
+                            "
+                        >
                             <i class="fas fa-ban"></i> Ban permanent
                         </button>
                     </form>
 
-                    <button class="admin-btn btn-ban-temp" onclick="toggleTempBan()">
+                    <button
+                        class="admin-btn btn-ban-temp"
+                        onclick="toggleTempBan()"
+                    >
                         <i class="fas fa-clock"></i> Ban temporaire
                     </button>
-                    <form id="temp-ban-form" action="{{ url_for('main.ban_user', user_id=profile_id) }}" method="POST"
-                          style="display:none; margin-top:8px;">
-                        <input type="hidden" name="ban_type" value="temporary">
-                        <input type="date" name="ban_until" class="date-input" required>
-                        <button type="submit" class="admin-btn btn-ban">Confirmer le ban</button>
+                    <form
+                        id="temp-ban-form"
+                        action="{{ url_for('main.ban_user', user_id=profile_id) }}"
+                        method="POST"
+                        style="display: none; margin-top: 8px"
+                    >
+                        <input
+                            type="hidden"
+                            name="ban_type"
+                            value="temporary"
+                        />
+                        <input
+                            type="date"
+                            name="ban_until"
+                            class="date-input"
+                            required
+                        />
+                        <button type="submit" class="admin-btn btn-ban">
+                            Confirmer le ban
+                        </button>
                     </form>
                     {% if profile_user.Ban_Status %}
-                    <form action="{{ url_for('main.unban_user', user_id=profile_id) }}" method="POST" style="display:inline;">
+                    <form
+                        action="{{ url_for('main.unban_user', user_id=profile_id) }}"
+                        method="POST"
+                        style="display: inline"
+                    >
                         <button type="submit" class="admin-btn btn-unban">
                             <i class="fas fa-unlock"></i> Lever le ban
                         </button>
                     </form>
                     {% endif %}
-                    <form action="{{ url_for('main.delete_user', user_id=profile_id) }}" method="POST" style="display:inline;">
-                        <button type="submit" class="admin-btn btn-delete"
-                                data-username="{{ profile_user.Username }}"
-                                onclick="return confirm('Supprimer définitivement le compte de ' + this.dataset.username + ' ? Cette action est irréversible.')">
+                    <form
+                        action="{{ url_for('main.delete_user', user_id=profile_id) }}"
+                        method="POST"
+                        style="display: inline"
+                    >
+                        <button
+                            type="submit"
+                            class="admin-btn btn-delete"
+                            data-username="{{ profile_user.Username }}"
+                            onclick="
+                                return confirm(
+                                    'Supprimer définitivement le compte de ' +
+                                        this.dataset.username +
+                                        ' ? Cette action est irréversible.',
+                                );
+                            "
+                        >
                             <i class="fas fa-trash"></i> Supprimer le compte
                         </button>
                     </form>
@@ -134,55 +251,80 @@
             </div>
             {% endif %}
 
-            <div class="post-actions" style="margin-bottom: 20px;">
-                <button class="action-btn" onclick="showTab('posts')" id="tab-posts">Posts</button>
-                <button class="action-btn" onclick="showTab('comments')" id="tab-comments">Comments</button>
+            <div class="post-actions" style="margin-bottom: 20px">
+                <button
+                    class="action-btn"
+                    onclick="showTab('posts')"
+                    id="tab-posts"
+                >
+                    Posts
+                </button>
+                <button
+                    class="action-btn"
+                    onclick="showTab('comments')"
+                    id="tab-comments"
+                >
+                    Comments
+                </button>
             </div>
 
             <div id="section-posts">
-                {% if posts %}
-                    {% for post in posts %}
-                    <div class="post-card">
-                        <div class="post-meta">{{ post.Date }}</div>
-                        <h2 class="post-title">{{ post.Titre }}</h2>
-                        <p class="post-content">{{ post.Description }}</p>
-                        {% if post.Photo %}
-                        <img src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
-                            alt="Post image" class="post-image-main" />
-                        {% endif %}
-                        {% if not is_own_profile %}
-                        <form action="{{ url_for('main.report_post', post_id=post.Id) }}" method="POST" class="report-post-form">
-                            <button type="submit" class="btn-report-post">
-                                <i class="fas fa-flag"></i> Signaler ce post
-                            </button>
-                        </form>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="post-card" style="text-align:center; color:#718096;">No post yet.</div>
+                {% if posts %} {% for post in posts %}
+                <div class="post-card">
+                    <div class="post-meta">{{ post.Date }}</div>
+                    <h2 class="post-title">{{ post.Titre }}</h2>
+                    <p class="post-content">{{ post.Description }}</p>
+                    {% if post.Photo %}
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + post.Photo) }}"
+                        alt="Post image"
+                        class="post-image-main"
+                    />
+                    {% endif %} {% if not is_own_profile %}
+                    <form
+                        action="{{ url_for('main.report_post', post_id=post.Id) }}"
+                        method="POST"
+                        class="report-post-form"
+                    >
+                        <button type="submit" class="btn-report-post">
+                            <i class="fas fa-flag"></i> Signaler ce post
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %} {% else %}
+                <div
+                    class="post-card"
+                    style="text-align: center; color: #718096"
+                >
+                    No post yet.
+                </div>
                 {% endif %}
             </div>
-            <div id="section-comments" style="display:none;">
-                {% if comments %}
-                    {% for comment in comments %}
-                    <div class="comment-card">
-                        <div class="comment-card-meta">{{ comment.Date }}</div>
-                        <p class="comment-card-text">{{ comment.Contenu }}</p>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="comment-card" style="text-align:center; color:#718096;">No comment yet.</div>
+            <div id="section-comments" style="display: none">
+                {% if comments %} {% for comment in comments %}
+                <div class="comment-card">
+                    <div class="comment-card-meta">{{ comment.Date }}</div>
+                    <p class="comment-card-text">{{ comment.Contenu }}</p>
+                </div>
+                {% endfor %} {% else %}
+                <div
+                    class="comment-card"
+                    style="text-align: center; color: #718096"
+                >
+                    No comment yet.
+                </div>
                 {% endif %}
             </div>
-
         </div>
         {% if current_user.Role == 'Admin' %}
         <div id="logs-overlay" class="logs-overlay" onclick="closeLogs()"></div>
         <div id="logs-modal" class="logs-modal">
             <div class="logs-modal-header">
                 <span>Logs — <strong id="logs-username"></strong></span>
-                <button class="logs-close-btn" onclick="closeLogs()"><i class="fas fa-times"></i></button>
+                <button class="logs-close-btn" onclick="closeLogs()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div id="logs-content" class="logs-content">
                 <div class="logs-loading">Chargement...</div>
@@ -192,24 +334,51 @@
 
         <script>
             function showTab(tab) {
-                document.getElementById('section-posts').style.display = tab === 'posts' ? 'block' : 'none';
-                document.getElementById('section-comments').style.display = tab === 'comments' ? 'block' : 'none';
-                document.getElementById('tab-posts').classList.toggle('liked', tab === 'posts');
-                document.getElementById('tab-comments').classList.toggle('liked', tab === 'comments');
+                document.getElementById("section-posts").style.display =
+                    tab === "posts" ? "block" : "none";
+                document.getElementById("section-comments").style.display =
+                    tab === "comments" ? "block" : "none";
+                document
+                    .getElementById("tab-posts")
+                    .classList.toggle("liked", tab === "posts");
+                document
+                    .getElementById("tab-comments")
+                    .classList.toggle("liked", tab === "comments");
             }
-            showTab('posts');
+            showTab("posts");
 
             function toggleTempBan() {
-                const form = document.getElementById('temp-ban-form');
-                form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+                const form = document.getElementById("temp-ban-form");
+                form.style.display =
+                    form.style.display === "none" ? "flex" : "none";
             }
 
             const ACTION_CONFIG = {
-                'POST_CREATED':    { label: 'A créé un post',         icon: '📝', cls: 'log-post'        },
-                'POST_EDITED':     { label: 'A modifié un post',      icon: '✏️', cls: 'log-edit'        },
-                'COMMENT_POSTED':  { label: 'A posté un commentaire', icon: '💬', cls: 'log-comment'     },
-                'REPORTED_BY':     { label: 'A été signalé',          icon: '🚩', cls: 'log-reported-by' },
-                'REPORTED':        { label: 'A signalé un contenu',   icon: '⚠️', cls: 'log-reported'    },
+                POST_CREATED: {
+                    label: "A créé un post",
+                    icon: "📝",
+                    cls: "log-post",
+                },
+                POST_EDITED: {
+                    label: "A modifié un post",
+                    icon: "✏️",
+                    cls: "log-edit",
+                },
+                COMMENT_POSTED: {
+                    label: "A posté un commentaire",
+                    icon: "💬",
+                    cls: "log-comment",
+                },
+                REPORTED_BY: {
+                    label: "A été signalé",
+                    icon: "🚩",
+                    cls: "log-reported-by",
+                },
+                REPORTED: {
+                    label: "A signalé un contenu",
+                    icon: "⚠️",
+                    cls: "log-reported",
+                },
             };
 
             function formatLogDate(dateStr) {
@@ -218,18 +387,30 @@
                 const now = new Date();
                 const diffMs = now - d;
                 const diffDays = Math.floor(diffMs / 86400000);
-                const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const time = d.toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
 
                 if (diffDays === 0) return "Aujourd'hui · " + time;
                 if (diffDays === 1) return "Hier · " + time;
                 if (diffDays < 7) return "Il y a " + diffDays + " jours";
-                return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+                return d.toLocaleDateString("fr-FR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                });
             }
 
             function groupByDate(logs) {
-                const groups = { "Aujourd'hui": [], "Hier": [], "Cette semaine": [], "Plus ancien": [] };
+                const groups = {
+                    "Aujourd'hui": [],
+                    Hier: [],
+                    "Cette semaine": [],
+                    "Plus ancien": [],
+                };
                 const now = new Date();
-                logs.forEach(log => {
+                logs.forEach((log) => {
                     const d = new Date(log.Created_At);
                     const diffDays = Math.floor((now - d) / 86400000);
                     if (diffDays === 0) groups["Aujourd'hui"].push(log);
@@ -242,61 +423,91 @@
 
             function buildStats(logs) {
                 const counts = {};
-                logs.forEach(log => { counts[log.Action_Type] = (counts[log.Action_Type] || 0) + 1; });
-                const order = ['REPORTED_BY', 'REPORTED', 'POST_CREATED', 'POST_EDITED', 'COMMENT_POSTED'];
-                const labels = { REPORTED_BY: 'reçus', REPORTED: 'faits', POST_CREATED: 'posts', POST_EDITED: 'édits', COMMENT_POSTED: 'comm.' };
+                logs.forEach((log) => {
+                    counts[log.Action_Type] =
+                        (counts[log.Action_Type] || 0) + 1;
+                });
+                const order = [
+                    "REPORTED_BY",
+                    "REPORTED",
+                    "POST_CREATED",
+                    "POST_EDITED",
+                    "COMMENT_POSTED",
+                ];
+                const labels = {
+                    REPORTED_BY: "reçus",
+                    REPORTED: "faits",
+                    POST_CREATED: "posts",
+                    POST_EDITED: "édits",
+                    COMMENT_POSTED: "comm.",
+                };
                 return order
-                    .filter(t => counts[t])
-                    .map(t => `<div class="logs-stat ${ACTION_CONFIG[t].cls}"><span>${ACTION_CONFIG[t].icon}</span> ${counts[t]} ${labels[t]}</div>`)
-                    .join('');
+                    .filter((t) => counts[t])
+                    .map(
+                        (t) =>
+                            `<div class="logs-stat ${ACTION_CONFIG[t].cls}"><span>${ACTION_CONFIG[t].icon}</span> ${counts[t]} ${labels[t]}</div>`,
+                    )
+                    .join("");
             }
 
             function openLogs(userId, username) {
-                document.getElementById('logs-username').textContent = username;
-                document.getElementById('logs-content').innerHTML = '<div class="logs-loading">Chargement...</div>';
-                document.getElementById('logs-overlay').style.display = 'block';
-                document.getElementById('logs-modal').style.display = 'flex';
+                document.getElementById("logs-username").textContent = username;
+                document.getElementById("logs-content").innerHTML =
+                    '<div class="logs-loading">Chargement...</div>';
+                document.getElementById("logs-overlay").style.display = "block";
+                document.getElementById("logs-modal").style.display = "flex";
 
-                fetch('/admin/logs/' + userId)
-                    .then(r => r.json())
-                    .then(logs => {
+                fetch("/admin/logs/" + userId)
+                    .then((r) => r.json())
+                    .then((logs) => {
                         if (!logs.length) {
-                            document.getElementById('logs-content').innerHTML = '<div class="logs-empty">Aucune action enregistrée.</div>';
+                            document.getElementById("logs-content").innerHTML =
+                                '<div class="logs-empty">Aucune action enregistrée.</div>';
                             return;
                         }
 
                         const statsHtml = `<div class="logs-stats">${buildStats(logs)}</div>`;
 
                         const groups = groupByDate(logs);
-                        let groupsHtml = '';
-                        Object.keys(groups).forEach(name => {
+                        let groupsHtml = "";
+                        Object.keys(groups).forEach((name) => {
                             if (!groups[name].length) return;
                             groupsHtml += `<div class="logs-group-title">${name}</div>`;
-                            groupsHtml += groups[name].map(log => {
-                                const cfg = ACTION_CONFIG[log.Action_Type] || { label: log.Action_Type, icon: '•', cls: '' };
-                                return `
+                            groupsHtml += groups[name]
+                                .map((log) => {
+                                    const cfg = ACTION_CONFIG[
+                                        log.Action_Type
+                                    ] || {
+                                        label: log.Action_Type,
+                                        icon: "•",
+                                        cls: "",
+                                    };
+                                    return `
                                     <div class="log-entry ${cfg.cls}">
                                         <span class="log-icon">${cfg.icon}</span>
                                         <div class="log-body">
                                             <div class="log-title">${cfg.label}</div>
-                                            ${log.Detail ? `<div class="log-detail">${log.Detail}</div>` : ''}
+                                            ${log.Detail ? `<div class="log-detail">${log.Detail}</div>` : ""}
                                         </div>
                                         <span class="log-date">${formatLogDate(log.Created_At)}</span>
                                     </div>
                                 `;
-                            }).join('');
+                                })
+                                .join("");
                         });
 
-                        document.getElementById('logs-content').innerHTML = statsHtml + groupsHtml;
+                        document.getElementById("logs-content").innerHTML =
+                            statsHtml + groupsHtml;
                     })
                     .catch(() => {
-                        document.getElementById('logs-content').innerHTML = '<div class="logs-empty">Erreur lors du chargement.</div>';
+                        document.getElementById("logs-content").innerHTML =
+                            '<div class="logs-empty">Erreur lors du chargement.</div>';
                     });
             }
 
             function closeLogs() {
-                document.getElementById('logs-overlay').style.display = 'none';
-                document.getElementById('logs-modal').style.display = 'none';
+                document.getElementById("logs-overlay").style.display = "none";
+                document.getElementById("logs-modal").style.display = "none";
             }
         </script>
     </body>
