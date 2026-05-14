@@ -492,7 +492,7 @@ def edit_post(post_id):
         flash("Post introuvable.")
         return redirect(url_for("main.index"))
 
-    if current_user.Username != post["Username"] and current_user.Role != "Admin":
+    if current_user.Username != post["Username"] and current_user.Role not in ["Admin", "Biologiste"]:
         flash("Action non autorisée.")
         return redirect(url_for("main.index"))
 
@@ -569,7 +569,7 @@ def delete_post(post_id):
         flash("Post introuvable.")
         return redirect(url_for("main.index"))
 
-    if current_user.Username != post["Username"] and current_user.Role != "Admin":
+    if current_user.Username != post["Username"] and current_user.Role not in ["Admin", "Biologiste"]:
         flash("Action non autorisée.")
         return redirect(url_for("main.index"))
 
