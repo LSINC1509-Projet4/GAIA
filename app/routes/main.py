@@ -878,3 +878,56 @@ def add_species():
                 flash("Erreur : Cette espèce existe déjà ou les données sont invalides.")
 
     return render_template("add_species.html")
+
+
+def get_classification(db, espece_id):
+    """Remonte la chaîne Parent_Id de l'espèce jusqu'à la racine de l'arbre."""
+    chain = []
+    current_id = espece_id
+    while current_id is not None:
+        row = db.execute(
+            "SELECT Id, Nom, Classe, Parent_Id FROM Especes WHERE Id = ?",
+            (current_id,),
+        ).fetchone()
+        if row is None:
+            break
+        chain.append(dict(row))
+        current_id = row["Parent_Id"]
+    chain.reverse()  # racine en premier, espèce en dernier
+    return chain
+
+
+@main_bp.route("/espece/<int:espece_id>")
+@login_required
+def espece_detail(espece_id):
+    db = get_db()
+    espece = db.execute(
+        "SELECT Id, Nom, NomScientifique, Classe, PhotoNaturaliste FROM Especes WHERE Id = ?",
+        (espece_id,),
+    ).fetchone()
+    if espece is None:
+        flash("Espèce introuvable.")
+        return redirect(url_for("main.index"))
+
+    classification = get_classification(db, espece_id)
+
+    observations = db.execute(
+        """
+        SELECT Posts.Id, Posts.Photo, Posts.Description,
+               strftime('%Y-%m-%d', Posts.Date) as Date,
+               Users.Username as Username
+        FROM Posts
+        JOIN Users ON Posts.User_Id = Users.Id
+        WHERE Posts.Espece_Id = ? AND Posts.TypePhoto = 'observation'
+        ORDER BY Posts.Date DESC
+        """,
+        (espece_id,),
+    ).fetchall()
+
+    return render_template(
+        "espece.html",
+        espece=espece,
+        classification=classification,
+        observations=observations,
+        nb_observations=len(observations),
+    )
