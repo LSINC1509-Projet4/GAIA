@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GAIA - Ajouter une Espèce</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    </head>
+    <body>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-msg">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="navbar">
+            <div class="user-info-block">
+                <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
+                <span class="user-greeting">Hey, {{ current_user.Username }}</span>
+            </div>
+
+            <div style="flex-grow: 1; text-align: center;">
+                <h1 style="font-size: 1.2rem; color: #2d3748; margin: 0;">Nouvelle Espèce</h1>
+            </div>
+
+            <div class="nav-links-group">
+                <a href="{{ url_for('main.index') }}" class="nav-item btn-post" title="Retour au Feed">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-item btn-logout" title="Déconnexion">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="feed-container">
+            <div class="post-card" style="max-width: 500px; margin: 0 auto; padding: 30px;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <i class="fa-solid fa-leaf" style="font-size: 3rem; color: #48bb78;"></i>
+                    <h2 style="margin-top: 10px; color: #2d3748;">Ajouter au Catalogue</h2>
+                    <p style="color: #718096; font-size: 0.9rem;">Espace réservé aux biologistes</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('main.add_species') }}">
+                    <div class="filter-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Nom Commun</label>
+                        <input type="text" name="nom" placeholder="Ex: Girafe" required
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    </div>
+
+                    <div class="filter-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Nom Scientifique</label>
+                        <input type="text" name="nom_scientifique" placeholder="Ex: Giraffa camelopardalis"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    </div>
+
+                    <div class="filter-group" style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Classe</label>
+                        <select name="classe" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: white;">
+                            <option value="Mammalia">Mammifère</option>
+                            <option value="Aves">Oiseau</option>
+                            <option value="Reptilia">Reptile</option>
+                            <option value="Amphibia">Amphibien</option>
+                            <option value="Actinopterygii">Poisson</option>
+                            <option value="Insecta">Insecte</option>
+                            <option value="Arachnida">Arachnide</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-apply" style="width: 100%; height: 45px; font-size: 1rem; background-color: #48bb78; color: white;">
+                        Enregistrer l'espèce
+                    </button>
+                </form>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="{{ url_for('main.index') }}" style="color: #a0aec0; text-decoration: none; font-size: 0.9rem;">Annuler</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

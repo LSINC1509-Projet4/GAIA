@@ -849,3 +849,32 @@ def graphs():
                            classe_dist=classe_dist,
                            post_growth=post_growth,
                            all_species=all_species)
+
+@main_bp.route("/add_species", methods=["GET", "POST"])
+@login_required
+def add_species():
+    if current_user.Role != 'Biologiste':
+        flash("Accès refusé. Seuls les biologistes peuvent ajouter des espèces.")
+        return redirect(url_for('main.index'))
+
+    if request.method == "POST":
+        nom = request.form.get("nom").strip()
+        nom_scientifique = request.form.get("nom_scientifique").strip()
+        classe = request.form.get("classe")
+
+        if not nom:
+            flash("Le nom de l'espèce est requis.")
+        else:
+            db = get_db()
+            try:
+                db.execute(
+                    "INSERT INTO Especes (Nom, NomScientifique, Classe) VALUES (?, ?, ?)",
+                    (nom, nom_scientifique, classe)
+                )
+                db.commit()
+                flash(f"L'espèce '{nom}' a été ajoutée avec succès.")
+                return redirect(url_for('main.index'))
+            except Exception as e:
+                flash("Erreur : Cette espèce existe déjà ou les données sont invalides.")
+
+    return render_template("add_species.html")

@@ -66,7 +66,7 @@ def seed_file_post():
                 db.execute(
                     """INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, User_Id, Espece_Id, Photo, is_verified)
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (desc, datetime.now().strftime("%Y-%m-%d"), loc, lat, lon, user_id, espece_id, filename, 1)
+                    (desc, datetime.now().strftime("%Y-%m-%d"), loc, lat, lon, user_id, espece_id, filename, 0)
                 )
                 print(f"✅ Post ajouté pour : {nom_esp}")
             except Exception as e:
