@@ -41,16 +41,17 @@ def index():
     sort = request.args.get("sort", "recent")
 
     # Jointure ajoutée pour lier Posts avec Especes (pour le Titre) et Users (pour le Username)
-    query = """SELECT Posts.Id, Especes.Nom as Titre, Description, Commentaire,
-               strftime('%Y-%m-%d', Date) as Date,
-               Localisation, Latitude, Longitude, Badges, Users.Username as Username, Photo,
-               (SELECT COUNT(*) FROM Likes WHERE PostId = Posts.Id) as LikeCount,
-               UserStats.CurrentLevel
-               FROM Posts
-               LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
-               LEFT JOIN Users ON Posts.User_Id = Users.Id
-               LEFT JOIN UserStats ON Users.Id = UserStats.UserId
-               WHERE 1=1"""
+    query = """SELECT
+            Posts.*,
+            Users.Username,
+            Especes.Nom AS Titre,
+            UserStats.CurrentLevel
+        FROM Posts
+        JOIN Users ON Posts.User_Id = Users.Id
+        LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+        LEFT JOIN UserStats ON Posts.User_Id = UserStats.UserId
+        WHERE 1=1
+    """
     params = []
 
     if search:
@@ -608,8 +609,6 @@ def validation_post():
             (espece_id, post_id),
         )
         db.commit()
-        flash(f"Post #{post_id} bien vérifié et espèce documentée.")
-
     query = """ SELECT Posts.Id, Especes.Nom as Titre, Description, strftime('%Y-%m-%d', Date) as Date,
                 Localisation, Photo, is_verified
                 FROM Posts
@@ -731,6 +730,7 @@ def user_logs(user_id):
         result.append(dict(log))
     return jsonify(result)
 
+
 @main_bp.route("/admin/users")
 @login_required
 def admin_users():
@@ -766,15 +766,16 @@ def admin_users():
         status_filter=status_filter,
     )
 
+
 @main_bp.route("/tableau")
 @login_required
 def tableau():
     db = get_db()
-
+    #pagination et ses paramêtres
     page = request.args.get('page', 1, type=int)
     per_page = 20
     offset = (page - 1) * per_page
-
+    #et trier
     sort_by = request.args.get('sort_by', 'Date')
     order = request.args.get('order', 'DESC').upper()
 
@@ -798,6 +799,7 @@ def tableau():
         FROM Posts
         LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
         JOIN Users ON Posts.User_Id = Users.Id
+
         ORDER BY {order_column} {order}
         LIMIT ? OFFSET ?
     """
