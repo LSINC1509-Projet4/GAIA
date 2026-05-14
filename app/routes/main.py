@@ -41,16 +41,17 @@ def index():
     sort = request.args.get("sort", "recent")
 
     # Jointure ajoutée pour lier Posts avec Especes (pour le Titre) et Users (pour le Username)
-    query = """SELECT Posts.Id, Especes.Nom as Titre, Description, Commentaire,
-               strftime('%Y-%m-%d', Date) as Date,
-               Localisation, Latitude, Longitude, Badges, Posts.Username, Photo,is_verified,
-               (SELECT COUNT(*) FROM Likes WHERE PostId = Posts.Id) as LikeCount,
-               UserStats.CurrentLevel
-               FROM Posts
-               LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
-               LEFT JOIN Users ON Posts.User_Id = Users.Id
-               LEFT JOIN UserStats ON Users.Id = UserStats.UserId
-               WHERE 1=1"""
+    query = """SELECT
+            Posts.*,
+            Users.Username,
+            Especes.Nom AS Titre,
+            UserStats.CurrentLevel
+        FROM Posts
+        JOIN Users ON Posts.User_Id = Users.Id
+        LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
+        LEFT JOIN UserStats ON Posts.User_Id = UserStats.UserId
+        WHERE 1=1
+    """
     params = []
 
     if search:
@@ -728,7 +729,6 @@ def user_logs(user_id):
     for log in logs:
         result.append(dict(log))
     return jsonify(result)
-
 
 
 @main_bp.route("/admin/users")
