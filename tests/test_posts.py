@@ -1,208 +1,79 @@
 import os
 import shutil
 from datetime import datetime
-
 from app import create_app
 from app.db import get_db
-
 
 def seed_file_post():
     app = create_app()
 
     with app.app_context():
         db = get_db()
-
-        # 1. Define paths
-        source_image = "app/static/panda.png"  # Using your logo as a test image
         upload_folder = "app/static/uploads"
-        filename = "test_panda.png"
-        target_path = os.path.join(upload_folder, filename)
 
-        # 2. Ensure the upload folder exists
+        # 1. S'assurer que le dossier uploads existe
         if not os.path.exists(upload_folder):
             os.makedirs(upload_folder)
-            print(f"Created folder: {upload_folder}")
+            print(f"📁 Dossier créé : {upload_folder}")
 
-        # 3. Simulate "saving" a file by copying it
-        try:
-            shutil.copy(source_image, target_path)
-            print(f"Image copied to: {target_path}")
-        except FileNotFoundError:
-            print("Error: source image 'app/static/Logo.png' not found.")
-            return
-
-        # 4. Insert into DB (Saving the STRING path, not the BLOB)
-        try:
-            db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
-                (
-                    "MY PANDA",
-                    "MY FAVORITE",
-                    "CUTE.",
-                    datetime.now().strftime("%Y-%m-%d"),
-                    "MONS",
-                    50.585,
-                    3.887,
-                    10,
-                    "TestUser",
-                    filename,  # This is the string (e.g., 'test_discovery_1776288311.png')
-                    0,
-                ),
-            )
+        # 2. Récupérer l'ID de l'utilisateur de test (Admin_Gaia ou TestUser)
+        # On essaie de trouver 'TestUser', sinon on prend le premier utilisateur trouvé
+        user = db.execute("SELECT Id FROM Users WHERE Username = ?", ("TestUser",)).fetchone()
+        if not user:
+            # Si TestUser n'existe pas, on le crée vite fait pour le test
+            db.execute("INSERT INTO Users (Username, Age, Email, Password, Role) VALUES (?, ?, ?, ?, ?)",
+                      ("TestUser", 25, "test@gaia.com", "1234", "utilisateur"))
             db.commit()
-            print("Database updated with photo reference!")
-        except Exception as e:
-            print(f"Error: {e}")
+            user_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+        else:
+            user_id = user['Id']
 
-        # =========================
-        # POST 2 : RENARD ROUX
-        # =========================
-        source_image = "app/static/renard.png"
-        filename = "test_renard.png"
-        target_path = os.path.join(upload_folder, filename)
+        # 3. Liste des données à insérer
+        # Structure : (Nom_Espece, Description, Localisation, Lat, Long, Image_Source)
+        data_to_seed = [
+            ("Panda", "Mon panda préféré", "Mons", 50.585, 3.887, "panda.png"),
+            ("Renard roux", "Aperçu dans la forêt tôt le matin", "Forêt de Soignes", 50.7700, 4.4100, "renard.png"),
+            ("Chouette hulotte", "Entendue la nuit dans un vieux chêne", "Ardennes", 50.1500, 5.5000, "chouette.png"),
+            ("Écureuil roux", "Grimpait à toute vitesse", "Parc de Bruxelles", 50.8450, 4.3650, "ecureuil.png"),
+            ("Cerf élaphe", "Troupeau observé au crépuscule", "Hautes Fagnes", 50.5000, 6.1000, "cerf.png")
+        ]
 
-        try:
-            shutil.copy(source_image, target_path)
-            print(f"Image copied to: {target_path}")
-        except FileNotFoundError:
-            print(f"Error: source image '{source_image}' not found.")
-            filename = None
+        for nom_esp, desc, loc, lat, lon, img_src in data_to_seed:
+            # A. Chercher l'ID de l'espèce (Normalisation)
+            espece = db.execute("SELECT Id FROM Especes WHERE Nom LIKE ?", (f"%{nom_esp}%",)).fetchone()
 
-        try:
-            db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
-                (
-                    "Renard roux",
-                    "Aperçu dans la forêt tôt le matin",
-                    "Magnifique",
-                    datetime.now().strftime("%Y-%m-%d"),
-                    "Forêt de Soignes",
-                    50.7700,
-                    4.4100,
-                    0,
-                    "TestUser",
-                    filename,
-                    0,
-                ),
-            )
-            db.commit()
-            print("Database updated with photo reference!")
-        except Exception as e:
-            print(f"Error: {e}")
+            if not espece:
+                print(f"⚠️ L'espèce '{nom_esp}' n'existe pas dans ton CSV. On l'ajoute à la volée.")
+                db.execute("INSERT INTO Especes (Nom, Classe) VALUES (?, ?)", (nom_esp, "Inconnu"))
+                espece_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+            else:
+                espece_id = espece['Id']
 
-        # =========================
-        # POST 3 : CHOUETTE HULOTTE
-        # =========================
-        source_image = "app/static/chouette.png"
-        filename = "test_chouette.png"
-        target_path = os.path.join(upload_folder, filename)
+            # B. Gérer l'image
+            src_path = os.path.join("app/static", img_src)
+            filename = f"test_{img_src}"
+            target_path = os.path.join(upload_folder, filename)
 
-        try:
-            shutil.copy(source_image, target_path)
-            print(f"Image copied to: {target_path}")
-        except FileNotFoundError:
-            print(f"Error: source image '{source_image}' not found.")
-            filename = None
+            if os.path.exists(src_path):
+                shutil.copy(src_path, target_path)
+                print(f"📸 Image copiée : {filename}")
+            else:
+                print(f"❌ Image source introuvable : {src_path}")
+                filename = "default.png" # Fallback
 
-        try:
-            db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
-                (
-                    "Chouette hulotte",
-                    "Entendue la nuit dans un vieux chêne",
-                    "Chant mystérieux",
-                    datetime.now().strftime("%Y-%m-%d"),
-                    "Ardennes",
-                    50.1500,
-                    5.5000,
-                    0,
-                    "TestUser",
-                    filename,
-                    0,
-                ),
-            )
-            db.commit()
-            print("Database updated with photo reference!")
-        except Exception as e:
-            print(f"Error: {e}")
+            # C. Insertion du Post
+            try:
+                db.execute(
+                    """INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, User_Id, Espece_Id, Photo, is_verified)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (desc, datetime.now().strftime("%Y-%m-%d"), loc, lat, lon, user_id, espece_id, filename, 1)
+                )
+                print(f"✅ Post ajouté pour : {nom_esp}")
+            except Exception as e:
+                print(f"🔥 Erreur insertion {nom_esp} : {e}")
 
-        # =========================
-        # POST 4 : ÉCUREUIL ROUX
-        # =========================
-        source_image = "app/static/ecureuil.png"
-        filename = "test_ecureil.png"
-        target_path = os.path.join(upload_folder, filename)
-
-        try:
-            shutil.copy(source_image, target_path)
-            print(f"Image copied to: {target_path}")
-        except FileNotFoundError:
-            print(f"Error: source image '{source_image}' not found.")
-            filename = None
-
-        try:
-            db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ?)""",
-                (
-                    "Écureuil roux",
-                    "Grimpait à toute vitesse sur un pin",
-                    "Trop rapide pour une photo nette",
-                    datetime.now().strftime("%Y-%m-%d"),
-                    "Parc de Bruxelles",
-                    50.8450,
-                    4.3650,
-                    0,
-                    "TestUser",
-                    filename,
-                    0,
-                ),
-            )
-            db.commit()
-            print("Database updated with photo reference!")
-        except Exception as e:
-            print(f"Error: {e}")
-
-        # =========================
-        # POST 5 : CERF ÉLAPHE
-        # =========================
-        source_image = "app/static/cerf.png"
-        filename = "test_cerf.png"
-        target_path = os.path.join(upload_folder, filename)
-
-        try:
-            shutil.copy(source_image, target_path)
-            print(f"Image copied to: {target_path}")
-        except FileNotFoundError:
-            print(f"Error: source image '{source_image}' not found.")
-            filename = None
-
-        try:
-            db.execute(
-                """INSERT INTO Posts (Titre, Description, Commentaire, Date, Localisation, Latitude, Longitude, Badges, Username, Photo , is_verified )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? , ? , ? )""",
-                (
-                    "Cerf élaphe",
-                    "Troupeau observé au crépuscule",
-                    "Impressionnant",
-                    datetime.now().strftime("%Y-%m-%d"),
-                    "Hautes Fagnes",
-                    50.5000,
-                    6.1000,
-                    0,
-                    "TestUser",
-                    filename,
-                    0,
-                ),
-            )
-            db.commit()
-            print("Database updated with photo reference!")
-        except Exception as e:
-            print(f"Error: {e}")
-
+        db.commit()
+        print("\n✨ Base de données mise à jour avec succès !")
 
 if __name__ == "__main__":
     seed_file_post()

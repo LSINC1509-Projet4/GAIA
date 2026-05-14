@@ -731,10 +731,6 @@ def user_logs(user_id):
         result.append(dict(log))
     return jsonify(result)
 
-
-<<<<<<< HEAD
-=======
-
 @main_bp.route("/admin/users")
 @login_required
 def admin_users():
@@ -770,7 +766,6 @@ def admin_users():
         status_filter=status_filter,
     )
 
->>>>>>> a9b8548529c62bf7e8456feac9733d0d23585b72
 @main_bp.route("/tableau")
 @login_required
 def tableau():
