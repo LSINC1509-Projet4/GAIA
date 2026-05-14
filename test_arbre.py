@@ -100,3 +100,4 @@ conn.close()
 
 print("✅ Données de test générées avec succès !")
 print("🚀 Relance ton serveur avec 'python run.py' et va sur http://127.0.0.1:5000/graphs")
+#Permet de simuler une fausse db posts pour les graphes
