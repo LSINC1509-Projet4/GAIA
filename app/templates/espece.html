@@ -58,7 +58,7 @@
                 <div class="classification-tree">
                     {% for niveau in classification %}
                         <div class="tree-node {{ 'tree-node-current' if loop.last else '' }}">
-                            <span class="tree-rank">{{ niveau.Classe or 'Niveau' }}</span>
+                            <span class="tree-rank">{{ niveau.Rang or 'Niveau' }}</span>
                             <span class="tree-nom">{{ niveau.Nom }}</span>
                         </div>
                         {% if not loop.last %}

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS Especes (
     NomScientifique TEXT,
     Classe TEXT,
     PhotoNaturaliste TEXT,
+    Rang TEXT,
     Parent_Id INTEGER,
     FOREIGN KEY (Parent_Id) REFERENCES Especes(Id) ON DELETE SET NULL
 );
