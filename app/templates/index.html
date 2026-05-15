@@ -128,7 +128,13 @@
                         {% endif %}
                     </div>
 
-                    <h2 class="post-title">{{ post.Titre }}</h2>
+                    <h2 class="post-title">
+                        {% if post.Espece_Id %}
+                            <a href="{{ url_for('main.espece_detail', espece_id=post.Espece_Id) }}" class="espece-link">{{ post.Titre }}</a>
+                        {% else %}
+                            {{ post.Titre }}
+                        {% endif %}
+                    </h2>
                     <p class="post-content">{{ post.Description }}</p>
 
                     {% if post.Photo %}

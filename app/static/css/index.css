@@ -82,6 +82,17 @@ body {
     font-weight: 700;
 }
 
+.espece-link {
+    color: #2f855a;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.espece-link:hover {
+    color: #48bb78;
+    text-decoration: underline;
+}
+
 .post-meta {
     font-size: 0.85rem;
     color: #718096;

@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS Especes (
     Nom TEXT UNIQUE NOT NULL,
     NomScientifique TEXT,
     Classe TEXT,
+    PhotoNaturaliste TEXT,
+    Rang TEXT,
     Parent_Id INTEGER,
     FOREIGN KEY (Parent_Id) REFERENCES Especes(Id) ON DELETE SET NULL
 );
@@ -37,6 +39,7 @@ CREATE TABLE IF NOT EXISTS Posts (
     Espece_Id INTEGER,
     Photo TEXT NOT NULL,
     is_verified INTEGER DEFAULT 0,
+    TypePhoto TEXT DEFAULT 'observation',
     FOREIGN KEY (User_Id) REFERENCES Users(Id) ON DELETE CASCADE,
     FOREIGN KEY (Espece_Id) REFERENCES Especes(Id) ON DELETE SET NULL
 );

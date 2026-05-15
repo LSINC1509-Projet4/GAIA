@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-import requests
 from flask import (
     Blueprint,
     current_app,
@@ -27,6 +26,87 @@ def log_action(db, user_id, action_type, target_id=None, target_type=None, detai
         "INSERT INTO UserLogs (User_Id, Action_Type, Target_Id, Target_Type, Detail) VALUES (?, ?, ?, ?, ?)",
         (user_id, action_type, target_id, target_type, detail),
     )
+
+
+# Rangs taxonomiques, du plus large (Règne) au plus précis (Clade).
+# Chaque entrée : (nom de colonne dans la table Animaux, libellé affiché).
+RANGS_TAXONOMIQUES = [
+    ("Regne", "Règne"),
+    ("Embranchement", "Embranchement"),
+    ("Sous_embranchement", "Sous-embranchement"),
+    ("Classe", "Classe"),
+    ("Sous_classe", "Sous-classe"),
+    ("Infra_classe", "Infra-classe"),
+    ("Ordre", "Ordre"),
+    ("Super_ordre", "Super-ordre"),
+    ("Sous_ordre", "Sous-ordre"),
+    ("Infra_ordre", "Infra-ordre"),
+    ("Famille", "Famille"),
+    ("Super_famille", "Super-famille"),
+    ("Sous_famille", "Sous-famille"),
+    ("Genre", "Genre"),
+    ("Sous_genre", "Sous-genre"),
+    ("Tribu", "Tribu"),
+    ("Clade", "Clade"),
+]
+
+
+def _valeur_rang_vide(valeur):
+    """Une cellule du CSV est vide si elle est NULL, vide ou NaN."""
+    return valeur is None or str(valeur).strip() in ("", "nan", "NaN")
+
+
+def get_or_create_espece(db, nom):
+    """
+    Retourne l'Id de l'espèce `nom` dans la table Especes.
+
+    - Si elle existe déjà -> on renvoie son Id.
+    - Sinon on la cherche dans le catalogue plat Animaux (issu du CSV) et on
+      construit sa branche de classification (Règne -> ... -> espèce), chaque
+      rang étant un noeud relié au précédent par Parent_Id.
+    - Si elle n'est pas dans le catalogue -> on crée une simple ligne nue.
+    """
+    existing = db.execute("SELECT Id FROM Especes WHERE Nom = ?", (nom,)).fetchone()
+    if existing:
+        return existing["Id"]
+
+    animal = db.execute(
+        "SELECT * FROM Animaux WHERE Nom_de_l_animal = ?", (nom,)
+    ).fetchone()
+
+    # Pas dans le catalogue : ligne nue, comme le faisait l'ancien code
+    if animal is None:
+        cursor = db.execute(
+            "INSERT INTO Especes (Nom, Rang) VALUES (?, 'Espèce')", (nom,)
+        )
+        return cursor.lastrowid
+
+    # Construction de la branche, du Règne vers l'espèce
+    parent_id = None
+    classe_biologique = None
+    for csv_col, rang_affiche in RANGS_TAXONOMIQUES:
+        valeur = animal[csv_col]
+        if _valeur_rang_vide(valeur):
+            continue
+        valeur = str(valeur).strip()
+        if rang_affiche == "Classe":
+            classe_biologique = valeur
+        noeud = db.execute("SELECT Id FROM Especes WHERE Nom = ?", (valeur,)).fetchone()
+        if noeud:
+            parent_id = noeud["Id"]
+        else:
+            cursor = db.execute(
+                "INSERT INTO Especes (Nom, Rang, Parent_Id) VALUES (?, ?, ?)",
+                (valeur, rang_affiche, parent_id),
+            )
+            parent_id = cursor.lastrowid
+
+    # L'espèce elle-même, rattachée au dernier rang trouvé
+    cursor = db.execute(
+        "INSERT INTO Especes (Nom, Classe, Rang, Parent_Id) VALUES (?, ?, 'Espèce', ?)",
+        (nom, classe_biologique, parent_id),
+    )
+    return cursor.lastrowid
 
 
 @main_bp.route("/")
@@ -182,18 +262,26 @@ def publish():
 
         db = get_db()
 
-        # Gestion de l'espèce : on la cherche, ou on la crée si elle n'existe pas
-        espece = db.execute("SELECT Id FROM Especes WHERE Nom = ?", (nom_espece,)).fetchone()
-        if espece:
-            espece_id = espece["Id"]
-        else:
-            cursor = db.execute("INSERT INTO Especes (Nom) VALUES (?)", (nom_espece,))
-            espece_id = cursor.lastrowid
+        # Gestion de l'espèce : on la récupère, ou on construit sa branche
+        # de classification depuis le catalogue Animaux.csv si besoin.
+        espece_id = get_or_create_espece(db, nom_espece)
+
+        # Type de photo : seul un biologiste peut épingler une planche naturaliste
+        type_photo = "observation"
+        if current_user.Role == "Biologiste" and request.form.get("TypePhoto") == "naturaliste":
+            type_photo = "naturaliste"
 
         db.execute(
-            "INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, Photo, User_Id, Espece_Id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (description, date_post, localisation, latitude, longitude, filename, current_user.id, espece_id),
+            "INSERT INTO Posts (Description, Date, Localisation, Latitude, Longitude, Photo, User_Id, Espece_Id, TypePhoto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (description, date_post, localisation, latitude, longitude, filename, current_user.id, espece_id, type_photo),
         )
+
+        # Une planche naturaliste devient la photo de référence officielle de l'espèce
+        if type_photo == "naturaliste" and filename:
+            db.execute(
+                "UPDATE Especes SET PhotoNaturaliste = ? WHERE Id = ?",
+                (filename, espece_id),
+            )
 
         stats = db.execute(
             "SELECT NbrePostsAlltime, NBreLikesAlltime FROM UserStats WHERE UserId = ?",
@@ -454,26 +542,25 @@ def add_comment(post_id):
 @main_bp.route("/api/animals")
 @login_required
 def get_animals():
-    query = request.args.get("q", "")
+    query = request.args.get("q", "").strip()
     if len(query) < 2:
         return jsonify([])
 
-    url = f"https://api.inaturalist.org/v1/taxa/autocomplete?q={query}&locale=fr"
-    try:
-        response = requests.get(url, timeout=5)
-        data = response.json()
-        results = []
-        for item in data.get("results", []):
-            results.append(
-                {
-                    "name": item.get("preferred_common_name") or item.get("name"),
-                    "scientific": item.get("name"),
-                }
-            )
-        return jsonify(results)
-    except Exception as e:
-        print(f"Error fetching from iNaturalist: {e}")
-        return jsonify([])
+    # On suggère uniquement des espèces du catalogue local (Animaux.csv),
+    # pour que chaque espèce choisie puisse construire son arbre de classification.
+    db = get_db()
+    rows = db.execute(
+        "SELECT Nom_de_l_animal, Genre FROM Animaux "
+        "WHERE Nom_de_l_animal LIKE ? "
+        "GROUP BY Nom_de_l_animal "
+        "ORDER BY Nom_de_l_animal LIMIT 10",
+        (f"%{query}%",),
+    ).fetchall()
+    results = [
+        {"name": row["Nom_de_l_animal"], "scientific": row["Genre"] or ""}
+        for row in rows
+    ]
+    return jsonify(results)
 
 
 @main_bp.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
@@ -878,3 +965,56 @@ def add_species():
                 flash("Erreur : Cette espèce existe déjà ou les données sont invalides.")
 
     return render_template("add_species.html")
+
+
+def get_classification(db, espece_id):
+    """Remonte la chaîne Parent_Id de l'espèce jusqu'à la racine de l'arbre."""
+    chain = []
+    current_id = espece_id
+    while current_id is not None:
+        row = db.execute(
+            "SELECT Id, Nom, Classe, Rang, Parent_Id FROM Especes WHERE Id = ?",
+            (current_id,),
+        ).fetchone()
+        if row is None:
+            break
+        chain.append(dict(row))
+        current_id = row["Parent_Id"]
+    chain.reverse()  # racine en premier, espèce en dernier
+    return chain
+
+
+@main_bp.route("/espece/<int:espece_id>")
+@login_required
+def espece_detail(espece_id):
+    db = get_db()
+    espece = db.execute(
+        "SELECT Id, Nom, NomScientifique, Classe, PhotoNaturaliste FROM Especes WHERE Id = ?",
+        (espece_id,),
+    ).fetchone()
+    if espece is None:
+        flash("Espèce introuvable.")
+        return redirect(url_for("main.index"))
+
+    classification = get_classification(db, espece_id)
+
+    observations = db.execute(
+        """
+        SELECT Posts.Id, Posts.Photo, Posts.Description,
+               strftime('%Y-%m-%d', Posts.Date) as Date,
+               Users.Username as Username
+        FROM Posts
+        JOIN Users ON Posts.User_Id = Users.Id
+        WHERE Posts.Espece_Id = ? AND Posts.TypePhoto = 'observation'
+        ORDER BY Posts.Date DESC
+        """,
+        (espece_id,),
+    ).fetchall()
+
+    return render_template(
+        "espece.html",
+        espece=espece,
+        classification=classification,
+        observations=observations,
+        nb_observations=len(observations),
+    )
