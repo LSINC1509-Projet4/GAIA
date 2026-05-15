@@ -29,6 +29,7 @@ API_DELAY = 0.5             # délai entre appels iNat (politesse)
 
 # 26 espèces à présenter (toutes confirmées dans Animaux.csv)
 ESPECES = [
+    # --- Mammifères ---
     "Renard roux", "Renard polaire", "Renard gris", "Fennec",
     "Loup gris", "Loup arctique", "Loup du Mexique",
     "Hermine", "Hyène brune",
@@ -39,6 +40,14 @@ ESPECES = [
     "Éléphant d'Asie", "Éléphant de Sumatra", "Éléphant de Bornéo",
     "Oryx d'Arabie", "Urial", "Antilope cervicapre",
     "Écureuil roux américain", "Écureuil de Douglas",
+    # --- Oiseaux ---
+    "Bald Eagle", "Emperor Penguin", "Galah",
+    "Common Blackbird", "Common Kingfisher", "Grey Heron",
+    "Scarlet macaw", "Hyacinth Macaw",
+    # --- Reptiles ---
+    "Marine Iguana", "Nile Crocodile", "Green Sea Turtle",
+    "Hawksbill Sea Turtle", "Central Bearded Dragon",
+    "Aldabra Giant Tortoise", "Galápagos Tortoise", "Frilled-Neck Lizard",
 ]
 
 
