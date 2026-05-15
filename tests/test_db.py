@@ -9,7 +9,6 @@ with app.app_context():
     db = get_db()
 
     # On crée les tables
-    print("Construction des tables...")
     init_db(db)
 
     # On insère un utilisateur de test
@@ -19,16 +18,10 @@ with app.app_context():
             ("TestUser", 34, "test@gaia.com", "password123"),
         )
         db.commit()
-        print("Utilisateur inséré avec succès !")
     except Exception as e:
-        print(f"Erreur d'insertion (peut-être qu'il existe déjà ?) : {e}")
+        print(f"Error")
 
     # On vérifie si on peut le lire
     user = db.execute(
         "SELECT * FROM users WHERE Username = ?", ("TestUser",)
     ).fetchone()
-
-    if user:
-        print(f"Lecture réussie ! ID: {user['id']}, Pseudo: {user['username']}")
-    else:
-        print("Impossible de retrouver l'utilisateur.")
