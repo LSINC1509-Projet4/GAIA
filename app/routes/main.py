@@ -125,7 +125,8 @@ def index():
             Posts.*,
             Users.Username,
             Especes.Nom AS Titre,
-            UserStats.CurrentLevel
+            UserStats.CurrentLevel,
+            (SELECT COUNT(*) FROM Likes WHERE PostId = Posts.Id) AS LikeCount
         FROM Posts
         JOIN Users ON Posts.User_Id = Users.Id
         LEFT JOIN Especes ON Posts.Espece_Id = Especes.Id
