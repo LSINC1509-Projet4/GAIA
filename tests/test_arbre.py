@@ -18,7 +18,6 @@ conn = sqlite3.connect("gaia.db")
 conn.row_factory = sqlite3.Row
 c = conn.cursor()
 
-print("🌱 Création des données de test...")
 
 # ==========================================
 # 1. UTILISATEUR DE TEST (biologiste)
@@ -83,6 +82,3 @@ for desc, date, nom_espece in posts_data:
 
 conn.commit()
 conn.close()
-
-print(f"✅ {len(ESPECES_TEST)} espèces créées avec leur arbre, {len(posts_data)} observations.")
-print("🚀 Relance ton serveur avec 'python run.py'")

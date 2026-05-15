@@ -14,7 +14,6 @@ def seed_file_post():
         # 1. S'assurer que le dossier uploads existe
         if not os.path.exists(upload_folder):
             os.makedirs(upload_folder)
-            print(f"📁 Dossier créé : {upload_folder}")
 
         # 2. Récupérer l'ID de l'utilisateur de test (Admin_Gaia ou TestUser)
         # On essaie de trouver 'TestUser', sinon on prend le premier utilisateur trouvé
@@ -43,7 +42,6 @@ def seed_file_post():
             espece = db.execute("SELECT Id FROM Especes WHERE Nom LIKE ?", (f"%{nom_esp}%",)).fetchone()
 
             if not espece:
-                print(f"⚠️ L'espèce '{nom_esp}' n'existe pas dans ton CSV. On l'ajoute à la volée.")
                 db.execute("INSERT INTO Especes (Nom, Classe) VALUES (?, ?)", (nom_esp, "Inconnu"))
                 espece_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
             else:
@@ -56,9 +54,7 @@ def seed_file_post():
 
             if os.path.exists(src_path):
                 shutil.copy(src_path, target_path)
-                print(f"📸 Image copiée : {filename}")
             else:
-                print(f"❌ Image source introuvable : {src_path}")
                 filename = "default.png" # Fallback
 
             # C. Insertion du Post
@@ -68,12 +64,10 @@ def seed_file_post():
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (desc, datetime.now().strftime("%Y-%m-%d"), loc, lat, lon, user_id, espece_id, filename, 0)
                 )
-                print(f"✅ Post ajouté pour : {nom_esp}")
             except Exception as e:
-                print(f"🔥 Erreur insertion {nom_esp} : {e}")
+                print(f"Error")
 
         db.commit()
-        print("\n✨ Base de données mise à jour avec succès !")
 
 if __name__ == "__main__":
     seed_file_post()

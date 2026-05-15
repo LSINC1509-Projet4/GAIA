@@ -66,7 +66,6 @@ conn = sqlite3.connect("gaia.db")
 conn.row_factory = sqlite3.Row
 c = conn.cursor()
 
-print("Génération du seed de démo...")
 
 # ==========================================
 # 1. UTILISATEURS
@@ -98,7 +97,6 @@ for username, age, email, pwd, role in USERS:
         "VALUES (?, 0, 0, 0, 1)",
         (uid,),
     )
-print(f"  ✔ {len(USERS)} utilisateurs créés")
 
 # ==========================================
 # 2. ESPÈCES (toutes du catalogue Animaux.csv)
@@ -120,11 +118,10 @@ for nom in ESPECES:
     try:
         ids_especes[nom] = get_or_create_espece(conn, nom)
     except Exception as e:
-        print(f"  ⚠ {nom!r} introuvable au catalogue : {e}")
+        print(f"error")
 
 # Garde uniquement celles qui ont marché ET qui ont au moins une photo iNat
 ESPECES = [e for e in ESPECES if e in ids_especes and a_des_photos_inat(e)]
-print(f"  ✔ {len(ESPECES)} espèces (avec arbre + photos iNat) prêtes")
 
 # ==========================================
 # 3. LIEUX par région biogéographique (cohérence avec l'espèce)
@@ -273,7 +270,6 @@ for _ in range(NB_POSTS):
         (desc, date, lieu, lat, lng, photo, ids_users[user], ids_especes[espece], is_verified),
     )
     post_ids.append(c.lastrowid)
-print(f"  ✔ {NB_POSTS} observations créées")
 
 # ==========================================
 # 5. PLANCHES NATURALISTES — par les biologistes
@@ -304,7 +300,6 @@ for espece in especes_naturalisees:
         (photo, ids_especes[espece]),
     )
     nb_planches += 1
-print(f"  ✔ {nb_planches} planches naturalistes")
 
 # ==========================================
 # 6. COMMENTAIRES
@@ -328,7 +323,6 @@ for _ in range(NB_COMMENTS):
         (contenu, date, ids_users[user], pid),
     )
     nb_comments += 1
-print(f"  ✔ {nb_comments} commentaires")
 
 # ==========================================
 # 7. LIKES
@@ -345,7 +339,6 @@ for pid in post_ids:
             nb_likes += 1
         except sqlite3.IntegrityError:
             pass
-print(f"  ✔ {nb_likes} likes")
 
 # ==========================================
 # 8. RECALCUL DES STATS XP
@@ -363,12 +356,6 @@ for username, uid in ids_users.items():
         "WHERE UserId = ?",
         (nb_posts, nb_likes_recus, xp, lvl, uid),
     )
-print(f"  ✔ Stats XP/niveau recalculées pour tous les users")
 
 conn.commit()
 conn.close()
-
-print("\n✅ Seed de démo terminé. Comptes pour la présentation :")
-for u in USERS:
-    print(f"   • {u[0]:18} (mdp: {u[3]:12}) — rôle: {u[4]}")
-print("\n🚀 Relance 'python run.py'")

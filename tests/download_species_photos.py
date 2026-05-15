@@ -91,8 +91,6 @@ def fetch_observation_photo_urls(taxon_id, n):
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    print(f"Téléchargement depuis iNaturalist : {len(ESPECES)} espèces × {PHOTOS_PER_SPECIES} photos max")
-    print(f"Destination : {OUT_DIR}\n")
 
     total_dl = 0
     sans_taxon = []
@@ -103,14 +101,12 @@ def main():
         try:
             taxon_id = find_taxon_id(nom)
             if not taxon_id:
-                print(f"  ✗ {nom} : taxon introuvable")
                 sans_taxon.append(nom)
                 continue
             time.sleep(API_DELAY)
 
             urls = fetch_observation_photo_urls(taxon_id, PHOTOS_PER_SPECIES)
             if not urls:
-                print(f"  ✗ {nom} : aucune observation avec photo")
                 sans_photo.append(nom)
                 continue
 
@@ -126,19 +122,11 @@ def main():
                     time.sleep(0.2)
                 except Exception:
                     pass  # un échec sur une photo ne bloque pas les autres
-            print(f"  ✔ {nom} → {n_dl} photo(s)")
             total_dl += n_dl
             time.sleep(API_DELAY)
         except Exception as e:
-            print(f"  ✗ {nom} : {e}")
             sans_photo.append(nom)
 
-    print(f"\n{total_dl} photos téléchargées pour {len(ESPECES) - len(sans_taxon) - len(sans_photo)} espèces.")
-    if sans_taxon:
-        print(f"Taxon introuvable ({len(sans_taxon)}) : {sans_taxon}")
-    if sans_photo:
-        print(f"Sans photo ({len(sans_photo)}) : {sans_photo}")
-    print("\n🚀 Tu peux maintenant lancer 'python -m tests.seed_demo'")
 
 
 if __name__ == "__main__":
