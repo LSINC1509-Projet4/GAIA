@@ -1,0 +1,263 @@
+
+css_content = """
+/* ===== ESPECE HEADER & TOGGLE ===== */
+.espece-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.mode-toggle {
+    display: flex;
+    gap: 8px;
+    background: #f0fff4;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid #c6f6d5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    align-items: center;
+}
+
+.toggle-btn {
+    padding: 9px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    text-decoration: none;
+    color: #718096;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+}
+
+.toggle-btn.active {
+    background: #fff;
+    color: #2f855a;
+    box-shadow: 0 2px 8px rgba(47, 133, 90, 0.15);
+}
+
+.toggle-btn:not(.active):not([disabled]):hover {
+    background: #e6ffed;
+    color: #276749;
+}
+
+/* Select Modifier stylisé comme toggle-btn */
+select.toggle-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+select.toggle-btn.active {
+    background-color: #fff;
+    color: #2f855a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232f855a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+select.toggle-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.2);
+}
+
+/* ===== CARD ===== */
+.espece-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    padding: 35px 40px;
+    max-width: 780px;
+    margin: 0 auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+}
+
+/* ===== SPECIES ICON ===== */
+.species-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+}
+
+.species-icon.add-mode {
+    background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+    color: #276749;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.species-icon.edit-mode {
+    background: linear-gradient(135deg, #bee3f8, #90cdf4);
+    color: #2b6cb0;
+    box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+}
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4a5568;
+    margin: 28px 0 14px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title i {
+    color: #48bb78;
+    font-size: 0.9rem;
+}
+
+/* ===== FORM GRID ===== */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #4a5568;
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    color: #2d3748;
+    background: #f7fafc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    font-family: inherit;
+    appearance: auto;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #68d391;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #cbd5e0;
+}
+
+/* ===== BUTTONS ===== */
+.btn-submit {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.35);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(72, 187, 120, 0.45);
+    background: linear-gradient(135deg, #38a169, #276749);
+}
+
+.btn-cancel {
+    padding: 12px 24px;
+    background: #fff;
+    color: #718096;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+    border-color: #a0aec0;
+    color: #2d3748;
+    background: #f7fafc;
+}
+
+/* ===== FLASH MESSAGES ===== */
+.flash-msg {
+    background: #c6f6d5;
+    color: #276749;
+    border: 1px solid #9ae6b4;
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin: 12px auto;
+    max-width: 780px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .espece-card {
+        padding: 22px 18px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group.full-width {
+        grid-column: 1;
+    }
+
+    .mode-toggle {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .toggle-btn {
+        justify-content: center;
+    }
+}
+"""
+
+with open("species_form.css", "w", encoding="utf-8") as f:
+    f.write(css_content)
+
+print("species_form.css généré.")
