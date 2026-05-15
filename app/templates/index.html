@@ -73,7 +73,7 @@
             <div class="nav-links-group">
                 {% if current_user.Role == 'Biologiste' %}
                     <a href="{{ url_for('main.validation_post') }}" class="nav-item btn-post"><i class="fa-solid fa-circle-check"></i></a>
-                    <a href="{{ url_for('main.add_species') }}" class="nav-item btn-post" title="Ajouter Espèce"><i class="fa-solid fa-leaf"></i></a>
+                    <a href="{{ url_for('main.manage_species') }}" class="nav-item btn-post" title="Ajouter Espèce"><i class="fa-solid fa-leaf"></i></a>
                 {% endif %}
 
                 <a href="{{ url_for('main.graphs') }}" class="nav-item btn-post" title="Statistiques"><i class="fa-solid fa-chart-line"></i></a>

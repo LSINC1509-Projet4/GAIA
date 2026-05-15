@@ -938,34 +938,64 @@ def graphs():
                            post_growth=post_growth,
                            all_species=all_species)
 
-@main_bp.route("/add_species", methods=["GET", "POST"])
+@main_bp.route("/manage_species", methods=["GET", "POST"])
+@main_bp.route("/manage_species/<int:espece_id>", methods=["GET", "POST"])
 @login_required
-def add_species():
+def manage_species(espece_id=None):
     if current_user.Role != 'Biologiste':
-        flash("Accès refusé. Seuls les biologistes peuvent ajouter des espèces.")
+        flash("Accès refusé. Seuls les biologistes peuvent gérer les espèces.")
         return redirect(url_for('main.index'))
 
+    db = get_db()
+    is_edit = espece_id is not None
+    species = None
+
+    if is_edit:
+        species = db.execute("SELECT * FROM Especes WHERE Id = ?", (espece_id,)).fetchone()
+        if not species:
+            flash("Espèce introuvable.")
+            return redirect(url_for('main.manage_species'))
+
     if request.method == "POST":
-        nom = request.form.get("nom").strip()
-        nom_scientifique = request.form.get("nom_scientifique").strip()
-        classe = request.form.get("classe")
+        nom = request.form.get("Nom", "").strip()
+        nom_scientifique = request.form.get("NomScientifique", "").strip()
+        classe = request.form.get("Classe", "").strip()
+        rang = request.form.get("Rang", "").strip()
+        parent_id = request.form.get("Parent_Id") or None
 
         if not nom:
             flash("Le nom de l'espèce est requis.")
         else:
-            db = get_db()
             try:
-                db.execute(
-                    "INSERT INTO Especes (Nom, NomScientifique, Classe) VALUES (?, ?, ?)",
-                    (nom, nom_scientifique, classe)
-                )
-                db.commit()
-                flash(f"L'espèce '{nom}' a été ajoutée avec succès.")
-                return redirect(url_for('main.index'))
+                if is_edit:
+                    db.execute(
+                        "UPDATE Especes SET Nom=?, NomScientifique=?, Classe=?, Rang=?, Parent_Id=? WHERE Id=?",
+                        (nom, nom_scientifique, classe, rang, parent_id, espece_id)
+                    )
+                    db.commit()
+                    flash(f"L'espèce '{nom}' a été modifiée avec succès.")
+                    return redirect(url_for('main.manage_species', espece_id=espece_id))
+                else:
+                    db.execute(
+                        "INSERT INTO Especes (Nom, NomScientifique, Classe, Rang, Parent_Id) VALUES (?, ?, ?, ?, ?)",
+                        (nom, nom_scientifique, classe, rang, parent_id)
+                    )
+                    db.commit()
+                    flash(f"L'espèce '{nom}' a été ajoutée avec succès.")
+                    return redirect(url_for('main.index'))
             except Exception as e:
                 flash("Erreur : Cette espèce existe déjà ou les données sont invalides.")
 
-    return render_template("add_species.html")
+    all_species = db.execute("SELECT Id, Nom, Rang FROM Especes ORDER BY Nom").fetchall()
+    species_list = [s for s in all_species if not is_edit or s["Id"] != espece_id]
+
+    return render_template("manage_species.html",
+        species=species,
+        species_list=species_list,
+        all_species=all_species,
+        is_edit=is_edit
+    )
+
 
 
 def get_classification(db, espece_id):

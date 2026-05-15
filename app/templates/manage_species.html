@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GAIA - {{ 'Modifier' if is_edit else 'Ajouter' }} une Espèce</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/species_form.css') }}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    </head>
+    <body>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-msg">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="navbar">
+            <div class="user-info-block">
+                <img src="{{ url_for('static', filename='Logo.png') }}" alt="GAIA Logo" class="nav-logo" />
+                <span class="user-greeting">Hey, {{ current_user.Username }}</span>
+            </div>
+            <div style="flex-grow: 1; text-align: center;">
+                <h1 style="font-size: 1.2rem; color: #2d3748; margin: 0;">
+                    {{ 'Modifier' if is_edit else 'Nouvelle' }} Espèce
+                </h1>
+            </div>
+            <div class="nav-links-group">
+                <a href="{{ url_for('main.index') }}" class="nav-item btn-post" title="Retour au Feed">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-item btn-logout" title="Déconnexion">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="feed-container" style="padding: 30px 20px;">
+
+            <div class="espece-header">
+                <div class="mode-toggle">
+                    <!-- Bouton Ajouter -->
+                    <a href="{{ url_for('main.manage_species') }}"
+                       class="toggle-btn {{ 'active' if not is_edit else '' }}">
+                        <i class="fa-solid fa-plus"></i> Ajouter
+                    </a>
+
+                    <!-- Select Modifier -->
+                    <select class="toggle-btn {{ 'active' if is_edit else '' }}"
+                            onchange="if(this.value) window.location='/manage_species/'+this.value">
+                        <option value="">✏️ Modifier...</option>
+                        {% for item in all_species %}
+                            <option value="{{ item.Id }}"
+                                {{ 'selected' if is_edit and species and species.Id == item.Id else '' }}>
+                                {{ item.Nom }}{% if item.Rang %} ({{ item.Rang }}){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="espece-card">
+
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div class="species-icon {{ 'edit-mode' if is_edit else 'add-mode' }}">
+                        <i class="fa-solid {{ 'fa-pen-to-square' if is_edit else 'fa-leaf' }}"></i>
+                    </div>
+                    <h2 style="margin-top: 12px; color: #2d3748; font-size: 1.4rem;">
+                        {{ 'Modifier l\'espèce' if is_edit else 'Ajouter au Catalogue' }}
+                    </h2>
+                    <p style="color: #718096; font-size: 0.9rem;">
+                        {{ 'Modifiez les informations ci-dessous.' if is_edit else 'Renseignez les informations de la nouvelle espèce.' }}
+                    </p>
+                </div>
+
+                <form method="POST">
+
+                    <div class="section-title">
+                        <i class="fa-solid fa-tag"></i> Identification
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nom Commun *</label>
+                            <input type="text" name="Nom"
+                                   value="{{ species.Nom if species else '' }}"
+                                   placeholder="Ex: Lion" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Nom Scientifique</label>
+                            <input type="text" name="NomScientifique"
+                                   value="{{ species.NomScientifique if species else '' }}"
+                                   placeholder="Ex: Panthera leo" />
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        <i class="fa-solid fa-sitemap"></i> Classification
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Classe</label>
+                            <select name="Classe">
+                                <option value="">-- Sélectionner --</option>
+                                {% set classes = [
+                                    'Mammalia', 'Aves', 'Reptilia', 'Amphibia',
+                                    'Actinopterygii', 'Chondrichthyes', 'Insecta',
+                                    'Arachnida', 'Crustacea', 'Gastropoda',
+                                    'Bivalvia', 'Cephalopoda', 'Echinodermata',
+                                    'Plantae', 'Fungi', 'Bacteria'
+                                ] %}
+                                {% for c in classes %}
+                                    <option value="{{ c }}"
+                                        {{ 'selected' if species and species.Classe == c else '' }}>
+                                        {{ c }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rang Taxonomique</label>
+                            <select name="Rang">
+                                {% set rangs = [
+                                    'Règne', 'Embranchement', 'Sous-embranchement',
+                                    'Classe', 'Sous-classe', 'Ordre', 'Sous-ordre',
+                                    'Famille', 'Sous-famille', 'Genre', 'Espèce'
+                                ] %}
+                                <option value="">-- Sélectionner --</option>
+                                {% for r in rangs %}
+                                    <option value="{{ r }}"
+                                        {{ 'selected' if species and species.Rang == r else '' }}>
+                                        {{ r }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Catégorie Parente</label>
+                            <select name="Parent_Id">
+                                <option value="">-- Aucun (Racine) --</option>
+                                {% for item in species_list %}
+                                    <option value="{{ item.Id }}"
+                                        {{ 'selected' if species and species.Parent_Id == item.Id else '' }}>
+                                        {{ item.Nom }}{% if item.Rang %} ({{ item.Rang }}){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <p style="margin-top: 6px; font-size: 0.8rem; color: #a0aec0; font-style: italic;">
+                                Sélectionnez le groupe auquel appartient cette espèce.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-top: 24px;">
+                        <button type="submit" class="btn-submit">
+                            <i class="fa-solid {{ 'fa-floppy-disk' if is_edit else 'fa-plus' }}"></i>
+                            {{ 'Enregistrer les modifications' if is_edit else 'Ajouter l\'espèce' }}
+                        </button>
+                        <a href="{{ url_for('main.index') }}" class="btn-cancel">
+                            Annuler
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </body>
+</html>
