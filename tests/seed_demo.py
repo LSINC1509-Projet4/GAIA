@@ -104,6 +104,7 @@ print(f"  ✔ {len(USERS)} utilisateurs créés")
 # 2. ESPÈCES (toutes du catalogue Animaux.csv)
 # ==========================================
 ESPECES = [
+    # Mammifères
     "Renard roux", "Renard polaire", "Renard gris",
     "Loup gris", "Loup arctique", "Loup du Mexique",
     "Hermine", "Porc domestique",
@@ -114,6 +115,14 @@ ESPECES = [
     "Tangue zébré", "Hyène brune",
     "Mara de Patagonie", "Antilope cervicapre",
     "Rhinopithèque de Roxellane",
+    # Oiseaux
+    "Bald Eagle", "Emperor Penguin", "Galah",
+    "Common Blackbird", "Common Kingfisher", "Grey Heron",
+    "Scarlet macaw", "Hyacinth Macaw",
+    # Reptiles
+    "Marine Iguana", "Nile Crocodile", "Green Sea Turtle",
+    "Hawksbill Sea Turtle", "Central Bearded Dragon",
+    "Aldabra Giant Tortoise", "Galápagos Tortoise", "Frilled-Neck Lizard",
 ]
 ids_especes = {}
 for nom in ESPECES:
@@ -189,6 +198,27 @@ REGIONS = {
         ("Désert d'Arabie, Émirats",          24.0000, 54.0000),
         ("Réserve de Mahazat as-Sayd",        22.0000, 41.5000),
     ],
+    "Antarctique": [
+        ("Péninsule Antarctique",            -64.0000, -60.0000),
+        ("Mer de Ross, Antarctique",         -75.0000, 175.0000),
+    ],
+    "Galápagos": [
+        ("Île Isabela, Galápagos",            -0.5000, -91.0000),
+        ("Île Santa Cruz, Galápagos",         -0.6500, -90.3500),
+    ],
+    "Afrique tropicale": [
+        ("Delta de l'Okavango, Botswana",    -19.5000, 22.5000),
+        ("Lac Turkana, Kenya",                3.5000, 36.0000),
+        ("Parc de Murchison Falls, Ouganda",  2.2700, 31.7900),
+    ],
+    "Océan Indien": [
+        ("Atoll d'Aldabra, Seychelles",     -9.4000, 46.4000),
+        ("Île de Mayotte",                  -12.8000, 45.1670),
+    ],
+    "Amazonie": [
+        ("Forêt amazonienne, Brésil",       -3.4650, -62.2150),
+        ("Parc Manú, Pérou",                -12.0000, -71.5000),
+    ],
 }
 
 # Région d'origine (probable) de chaque espèce
@@ -219,6 +249,24 @@ ESPECE_REGION = {
     "Vache Highland":            "Belgique",
     "Chlamydophore tronqué":     "Amérique du Sud",
     "Tangue zébré":              "Madagascar",
+    # Oiseaux
+    "Bald Eagle":                "Amérique du Nord",
+    "Emperor Penguin":           "Antarctique",
+    "Galah":                     "Australie",
+    "Common Blackbird":          "Belgique",
+    "Common Kingfisher":         "Belgique",
+    "Grey Heron":                "Belgique",
+    "Scarlet macaw":             "Amazonie",
+    "Hyacinth Macaw":            "Amazonie",
+    # Reptiles
+    "Marine Iguana":             "Galápagos",
+    "Nile Crocodile":            "Afrique tropicale",
+    "Green Sea Turtle":          "Australie",
+    "Hawksbill Sea Turtle":      "Asie du Sud",
+    "Central Bearded Dragon":    "Australie",
+    "Aldabra Giant Tortoise":    "Océan Indien",
+    "Galápagos Tortoise":        "Galápagos",
+    "Frilled-Neck Lizard":       "Australie",
 }
 
 
